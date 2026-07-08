@@ -257,6 +257,11 @@ class _QuizArea extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (solved) const _SuccessBanner(),
+        if (solved) ...<Widget>[
+          const SizedBox(height: 4),
+          _StarRow(count: quiz.currentQuestionStars, max: 3, size: 30),
+          const SizedBox(height: 10),
+        ],
         if (quiz.total > 1) ...<Widget>[
           _QuizProgress(index: quiz.index, total: quiz.total),
           const SizedBox(height: 10),
@@ -266,6 +271,8 @@ class _QuizArea extends ConsumerWidget {
           const SizedBox(height: 16),
           if (quiz.isLastQuestion)
             _RestartButton(
+              earned: quiz.totalStars,
+              max: quiz.maxStars,
               onRestart: () {
                 quizController.reset();
                 story.readStory();
@@ -430,9 +437,15 @@ class _NextButton extends StatelessWidget {
 }
 
 class _RestartButton extends StatelessWidget {
-  const _RestartButton({required this.onRestart});
+  const _RestartButton({
+    required this.onRestart,
+    required this.earned,
+    required this.max,
+  });
 
   final VoidCallback onRestart;
+  final int earned;
+  final int max;
 
   @override
   Widget build(BuildContext context) {
@@ -447,7 +460,18 @@ class _RestartButton extends StatelessWidget {
             color: PebloColors.primaryDark,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
+        Text(
+          'You earned $earned of $max stars',
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: PebloColors.ink,
+          ),
+        ),
+        const SizedBox(height: 6),
+        _StarRow(count: earned, max: max, size: 26),
+        const SizedBox(height: 14),
         SizedBox(
           height: 56,
           child: ElevatedButton.icon(
@@ -467,6 +491,40 @@ class _RestartButton extends StatelessWidget {
             label: const Text('Read it again'),
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// A row of gold/empty stars, animating each filled star in with a small pop.
+class _StarRow extends StatelessWidget {
+  const _StarRow({required this.count, required this.max, this.size = 28});
+
+  final int count;
+  final int max;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        for (int i = 0; i < max; i++)
+          TweenAnimationBuilder<double>(
+            key: ValueKey<String>('star-$i-${i < count}'),
+            tween: Tween<double>(begin: i < count ? 0.0 : 1.0, end: 1.0),
+            duration: Duration(milliseconds: 250 + i * 120),
+            curve: Curves.elasticOut,
+            builder: (context, t, child) =>
+                Transform.scale(scale: i < count ? t : 1.0, child: child),
+            child: Icon(
+              i < count ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: size,
+              color: i < count ? PebloColors.accent : PebloColors.ink.withValues(
+                    alpha: 0.25,
+                  ),
+            ),
+          ),
       ],
     );
   }

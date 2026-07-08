@@ -16,6 +16,7 @@ class QuizState {
     this.attempts = 0,
     this.shakeToken = 0,
     this.errorMessage,
+    this.totalStars = 0,
   });
 
   const QuizState.loading()
@@ -25,7 +26,8 @@ class QuizState {
         lastSelected = null,
         attempts = 0,
         shakeToken = 0,
-        errorMessage = null;
+        errorMessage = null,
+        totalStars = 0;
 
   final List<Question> questions;
   final int index;
@@ -43,6 +45,9 @@ class QuizState {
 
   final String? errorMessage;
 
+  /// Running total of stars earned across the whole sequence.
+  final int totalStars;
+
   Question? get current =>
       questions.isEmpty || index >= questions.length ? null : questions[index];
 
@@ -54,6 +59,14 @@ class QuizState {
   /// Whether the current question is the last in the sequence.
   bool get isLastQuestion => index >= questions.length - 1;
 
+  /// Stars for the *current* question, based on wrong attempts (valid once
+  /// solved): 0 wrong → 3, 1 wrong → 2, otherwise → 1.
+  int get currentQuestionStars =>
+      attempts == 0 ? 3 : (attempts == 1 ? 2 : 1);
+
+  /// Maximum stars achievable across the whole sequence.
+  int get maxStars => total * 3;
+
   QuizState copyWith({
     List<Question>? questions,
     int? index,
@@ -62,6 +75,7 @@ class QuizState {
     int? attempts,
     int? shakeToken,
     String? errorMessage,
+    int? totalStars,
   }) {
     return QuizState(
       questions: questions ?? this.questions,
@@ -71,6 +85,7 @@ class QuizState {
       attempts: attempts ?? this.attempts,
       shakeToken: shakeToken ?? this.shakeToken,
       errorMessage: errorMessage ?? this.errorMessage,
+      totalStars: totalStars ?? this.totalStars,
     );
   }
 
@@ -83,7 +98,8 @@ class QuizState {
       other.lastSelected == lastSelected &&
       other.attempts == attempts &&
       other.shakeToken == shakeToken &&
-      other.errorMessage == errorMessage;
+      other.errorMessage == errorMessage &&
+      other.totalStars == totalStars;
 
   @override
   int get hashCode => Object.hash(
@@ -94,5 +110,6 @@ class QuizState {
         attempts,
         shakeToken,
         errorMessage,
+        totalStars,
       );
 }

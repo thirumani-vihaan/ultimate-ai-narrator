@@ -100,4 +100,25 @@ void main() {
     expect(controller.currentState.isLastQuestion, isFalse);
     controller.dispose();
   });
+
+  test('stars: 3 for a first-try correct, 2 after one wrong, accumulating',
+      () async {
+    final controller = controllerWith(<Question>[
+      sampleQuestion(optionCount: 3),
+      sampleQuestion(optionCount: 5),
+    ]);
+    await controller.load();
+
+    controller.answer('Option 2'); // correct first try → 3 stars
+    expect(controller.currentState.currentQuestionStars, 3);
+    expect(controller.currentState.totalStars, 3);
+
+    controller.nextQuestion();
+    controller.answer('Option 1'); // wrong
+    controller.answer('Option 2'); // correct after 1 wrong → 2 stars
+    expect(controller.currentState.currentQuestionStars, 2);
+    expect(controller.currentState.totalStars, 5);
+    expect(controller.currentState.maxStars, 6);
+    controller.dispose();
+  });
 }

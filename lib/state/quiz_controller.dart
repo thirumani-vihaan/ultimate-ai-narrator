@@ -45,7 +45,12 @@ class QuizController extends StateNotifier<QuizState> {
 
     if (question.isCorrect(option)) {
       _haptics.correct();
-      state = state.copyWith(status: QuizStatus.solved, lastSelected: option);
+      final stars = state.attempts == 0 ? 3 : (state.attempts == 1 ? 2 : 1);
+      state = state.copyWith(
+        status: QuizStatus.solved,
+        lastSelected: option,
+        totalStars: state.totalStars + stars,
+      );
     } else {
       _haptics.wrong();
       state = state.copyWith(
@@ -66,6 +71,7 @@ class QuizController extends StateNotifier<QuizState> {
         questions: state.questions,
         index: state.index + 1,
         status: QuizStatus.ready,
+        totalStars: state.totalStars,
       );
     }
   }
