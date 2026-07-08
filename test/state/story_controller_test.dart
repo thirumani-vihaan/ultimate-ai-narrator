@@ -93,17 +93,25 @@ void main() {
   });
 
   test('watchdog reveals the quiz even if completion never fires', () async {
-    // Use a tiny watchdog by monkey-testing: a very short story means the
-    // watchdog window is still seconds long, so instead we assert the reveal
-    // happens via the normal completion path above. Here we assert that a
-    // missing completion keeps us in narrating until the watchdog — verified
-    // indirectly by confirming no premature transition occurs.
-    controller.readStory();
-    narrator.emit(const NarrationSpeaking());
+    // A dedicated controller with a tiny watchdog window.
+    final n = ManualNarrator();
+    final c = StoryController(
+      n,
+      revealDelay: const Duration(milliseconds: 5),
+      watchdogOverride: const Duration(milliseconds: 10),
+    );
+    addTearDown(() {
+      c.dispose();
+      n.dispose();
+    });
+
+    c.readStory();
+    n.emit(const NarrationSpeaking());
     await tick();
-    expect(controller.currentPhase, isA<PhaseNarrating>());
-    await tick(20);
-    // Still narrating shortly after (watchdog window is seconds, not ms).
-    expect(controller.currentPhase, isA<PhaseNarrating>());
+    expect(c.currentPhase, isA<PhaseNarrating>());
+
+    // No completion event is ever emitted; the watchdog must reveal the quiz.
+    await tick(30);
+    expect(c.currentPhase, isA<PhaseQuiz>());
   });
 }

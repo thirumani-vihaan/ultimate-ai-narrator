@@ -16,6 +16,7 @@ class StoryController extends StateNotifier<StoryPhase> {
   StoryController(
     this._narrator, {
     this.revealDelay = const Duration(milliseconds: 650),
+    this.watchdogOverride,
   }) : super(const PhaseIdle()) {
     _sub = _narrator.state.listen(_onNarration);
   }
@@ -30,6 +31,11 @@ class StoryController extends StateNotifier<StoryPhase> {
   /// How long the "revealing" transition lasts before the quiz becomes
   /// interactive (matches the reveal animation).
   final Duration revealDelay;
+
+  /// Optional fixed watchdog duration (used by tests to exercise the
+  /// missing-completion path deterministically). Production computes it from
+  /// the story length.
+  final Duration? watchdogOverride;
 
   late final StreamSubscription<NarrationState> _sub;
   Timer? _revealTimer;
@@ -105,7 +111,7 @@ class StoryController extends StateNotifier<StoryPhase> {
   /// the child is never stuck on a spinner (guards flaky TTS engines / web).
   void _startWatchdog() {
     _watchdogTimer?.cancel();
-    _watchdogTimer = Timer(_watchdogDuration(storyText), () {
+    _watchdogTimer = Timer(watchdogOverride ?? _watchdogDuration(storyText), () {
       if (state is PhaseNarrating) _beginReveal();
     });
   }
