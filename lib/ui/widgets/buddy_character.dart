@@ -60,25 +60,29 @@ class _BuddyCharacterState extends State<BuddyCharacter>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          final active = !widget.reduceMotion &&
-              (widget.mood == BuddyMood.talking ||
-                  widget.mood == BuddyMood.happy);
+          final talking = widget.mood == BuddyMood.talking;
+          final active = !widget.reduceMotion && (talking || widget.mood == BuddyMood.happy);
           final bounce = active ? _controller.value * 6 : 0.0;
-          return Transform.translate(offset: Offset(0, -bounce), child: child);
+          final mouthOpen =
+              (talking && !widget.reduceMotion) ? _controller.value : 0.0;
+          return Transform.translate(
+            offset: Offset(0, -bounce),
+            child: CustomPaint(
+              size: Size.square(widget.size),
+              painter: _PipPainter(mood: widget.mood, mouthOpen: mouthOpen),
+            ),
+          );
         },
-        child: CustomPaint(
-          size: Size.square(widget.size),
-          painter: _PipPainter(mood: widget.mood),
-        ),
       ),
     );
   }
 }
 
 class _PipPainter extends CustomPainter {
-  _PipPainter({required this.mood});
+  _PipPainter({required this.mood, this.mouthOpen = 0.0});
 
   final BuddyMood mood;
+  final double mouthOpen;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -158,7 +162,7 @@ class _PipPainter extends CustomPainter {
           Rect.fromCenter(
             center: Offset(cx, my),
             width: w * 0.18,
-            height: h * 0.1,
+            height: h * (0.05 + 0.08 * mouthOpen),
           ),
           fill,
         );
@@ -197,5 +201,6 @@ class _PipPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PipPainter oldDelegate) => oldDelegate.mood != mood;
+  bool shouldRepaint(_PipPainter oldDelegate) =>
+      oldDelegate.mood != mood || oldDelegate.mouthOpen != mouthOpen;
 }

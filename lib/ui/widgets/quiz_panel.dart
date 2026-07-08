@@ -22,8 +22,9 @@ class QuizPanel extends StatefulWidget {
 }
 
 class _QuizPanelState extends State<QuizPanel>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _shake;
+  late final AnimationController _entry;
 
   @override
   void initState() {
@@ -32,6 +33,10 @@ class _QuizPanelState extends State<QuizPanel>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    _entry = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    )..forward();
   }
 
   @override
@@ -40,11 +45,16 @@ class _QuizPanelState extends State<QuizPanel>
     if (widget.state.shakeToken != oldWidget.state.shakeToken) {
       _shake.forward(from: 0);
     }
+    // Re-run the entrance stagger when the question changes.
+    if (widget.state.index != oldWidget.state.index) {
+      _entry.forward(from: 0);
+    }
   }
 
   @override
   void dispose() {
     _shake.dispose();
+    _entry.dispose();
     super.dispose();
   }
 
@@ -99,18 +109,38 @@ class _QuizPanelState extends State<QuizPanel>
           );
           final isShaking = widget.state.status == QuizStatus.wrong &&
               widget.state.lastSelected == option;
+
+          Widget child = tile;
+          if (isShaking) {
+            child = AnimatedBuilder(
+              animation: _shake,
+              builder: (context, inner) => Transform.translate(
+                offset: Offset(_shakeOffset(), 0),
+                child: inner,
+              ),
+              child: child,
+            );
+          }
+          // Staggered fade + slide-up entrance.
+          child = AnimatedBuilder(
+            animation: _entry,
+            builder: (context, inner) {
+              final start = (i * 0.12).clamp(0.0, 0.6);
+              final t = Interval(start, 1.0, curve: Curves.easeOut)
+                  .transform(_entry.value);
+              return Opacity(
+                opacity: t,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - t) * 14),
+                  child: inner,
+                ),
+              );
+            },
+            child: child,
+          );
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: isShaking
-                ? AnimatedBuilder(
-                    animation: _shake,
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(_shakeOffset(), 0),
-                      child: child,
-                    ),
-                    child: tile,
-                  )
-                : tile,
+            child: child,
           );
         }),
         if (widget.state.status == QuizStatus.wrong)

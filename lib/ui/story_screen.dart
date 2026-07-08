@@ -11,6 +11,7 @@ import 'widgets/celebration_overlay.dart';
 import 'widgets/error_retry.dart';
 import 'widgets/quiz_panel.dart';
 import 'widgets/read_button.dart';
+import 'widgets/sky_background.dart';
 import 'widgets/story_card.dart';
 
 /// The single screen: buddy + story + a bottom area that swaps between the read
@@ -53,6 +54,7 @@ class StoryScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: <Widget>[
+          Positioned.fill(child: SkyBackground(reduceMotion: reduceMotion)),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
