@@ -9,10 +9,16 @@ enum BuddyMood { idle, talking, thinking, happy }
 /// [CustomPainter] so it scales crisply and stays tiny in memory — important for
 /// the mid-range-device budget. A gentle bounce conveys "talking" / "happy".
 class BuddyCharacter extends StatefulWidget {
-  const BuddyCharacter({super.key, required this.mood, this.size = 150});
+  const BuddyCharacter({
+    super.key,
+    required this.mood,
+    this.size = 150,
+    this.reduceMotion = false,
+  });
 
   final BuddyMood mood;
   final double size;
+  final bool reduceMotion;
 
   @override
   State<BuddyCharacter> createState() => _BuddyCharacterState();
@@ -28,7 +34,18 @@ class _BuddyCharacterState extends State<BuddyCharacter>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
+    );
+    if (!widget.reduceMotion) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(BuddyCharacter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.reduceMotion && _controller.isAnimating) {
+      _controller.stop();
+    } else if (!widget.reduceMotion && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override
@@ -43,8 +60,9 @@ class _BuddyCharacterState extends State<BuddyCharacter>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          final active =
-              widget.mood == BuddyMood.talking || widget.mood == BuddyMood.happy;
+          final active = !widget.reduceMotion &&
+              (widget.mood == BuddyMood.talking ||
+                  widget.mood == BuddyMood.happy);
           final bounce = active ? _controller.value * 6 : 0.0;
           return Transform.translate(offset: Offset(0, -bounce), child: child);
         },

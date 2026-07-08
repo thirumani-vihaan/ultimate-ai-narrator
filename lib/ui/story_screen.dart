@@ -22,6 +22,7 @@ class StoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phase = ref.watch(storyControllerProvider);
     final story = ref.read(storyControllerProvider.notifier);
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     // Bridge: when the quiz becomes solved, tell the story controller to
     // enter its celebratory Success phase (single, testable coupling point).
@@ -58,7 +59,12 @@ class StoryScreen extends ConsumerWidget {
                       children: <Widget>[
                         const _Header(),
                         const SizedBox(height: 4),
-                        Center(child: BuddyCharacter(mood: mood)),
+                        Center(
+                          child: BuddyCharacter(
+                            mood: mood,
+                            reduceMotion: reduceMotion,
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         StoryCard(
                           text: StoryController.storyText,
@@ -75,7 +81,9 @@ class StoryScreen extends ConsumerWidget {
             ),
           ),
           Positioned.fill(
-            child: CelebrationOverlay(active: phase is PhaseSuccess),
+            child: CelebrationOverlay(
+              active: phase is PhaseSuccess && !reduceMotion,
+            ),
           ),
         ],
       ),
