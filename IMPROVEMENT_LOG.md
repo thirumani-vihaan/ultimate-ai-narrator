@@ -19,6 +19,16 @@ One entry per kept change beyond the Phase 2 baseline. Format:
 
 8 | UX / ACCESSIBILITY | `liveRegion` `Semantics` announcer speaks each phase to screen readers ("The story is playing", "Question 1 of 3", "Correct!"); decorative buddy wrapped in `ExcludeSemantics`. Isolated widget so it doesn't rebuild the screen. | **KEPT** — meaningful a11y for a child app; +1 semantics test. 55 tests total, 0 analyze issues.
 
+## Third loop — "make it the best" (ROI gate lifted at user request)
+
+9  | FEATURE / UX | Score & stars: ⭐⭐⭐/⭐⭐/⭐ per question by wrong-attempt count, running total + finish summary, animated star row. | **KEPT** — +1 stars test; fixed a duplicate-key crash found by the flow test.
+10 | FEATURE / UX | Stop control during narration (`stopReading` → idle). | **KEPT** — child agency; +1 test.
+11 | FEATURE / COST | Audible ElevenLabs playback via `just_audio` (`JustAudioSink`, streaming bytes source, web+mobile) + `AudioSink.dispose`. | **KEPT** — completes the bonus; web build verified.
+12 | UX / FEATURE | Sound effects (bundled WAV chimes via just_audio) + mute toggle; `NoopSoundEffects` default keeps tests silent. | **KEPT** — +2 tests (sfx fire, mute toggle).
+13 | UX / PERFORMANCE | Visual polish: animated sky + drifting clouds, talking-mouth buddy, staggered option-tile entrance — all `RepaintBoundary`-isolated + reduced-motion aware. | **KEPT** — web build verified; capped/cheap to protect 60 fps.
+14 | UX / FEATURE | Word-highlight narration via optional `ProgressiveNarrator` capability (native TTS progress), graceful fallback where unsupported. | **KEPT** — +1 progress test; base `Narrator` contract left intact (separate capability interface).
+15 | FEATURE / PERSISTENCE | Persist mute across launches (`shared_preferences` behind injectable `SettingsStore`; `MuteNotifier`). | **KEPT** — +2 tests. 61 tests total, 0 analyze issues.
+
 ## Dimension coverage so far
 CORRECTNESS ✅, PERFORMANCE ✅ (fonts, RepaintBoundary, capped particles, reduced-motion),
 RELIABILITY ✅, ERROR-HANDLING ✅ (narration + quiz load), OBSERVABILITY ✅ (no silent catch),

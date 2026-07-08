@@ -29,14 +29,16 @@ resilience, (8) screen-reader live announcements.
 **None** — every attempted change was kept. Deferred (never-tried) ideas are in `BACKLOG.md`.
 
 ## Stopping condition
-**SOFT — empty backlog above the ROI bar** (3.3.b): after this second loop (iterations 6–8:
-watchdog test, `FallbackNarrator`, screen-reader announcements), the remaining backlog items
-(word-highlight, real audio playback, persistent cache, localisation) are high-effort or
-risk the hard budget and don't clear the ROI bar. Well within the HARD caps (2 h wall-clock,
-30 iterations — 8 total used). No wiring-integrity regression (`wiring_test` still green).
+## Stopping condition
+Loops 1–2 stopped on **SOFT — empty backlog above the ROI bar** (3.3.b). At the user's
+request the **ROI gate was then lifted for a third loop** ("include everything") — iterations
+9–15 shipped the entire backlog and full UI polish (score & stars, stop control, audible
+ElevenLabs via just_audio, sound effects + persisted mute, animated visuals, word-highlight
+narration, settings persistence), all within the ~3 GB/60 fps budget and with no
+wiring-integrity regression (`wiring_test` still green). 61 tests, 0 analyze issues.
 
 ## Test suite — offline, zero credentials ✅
-`flutter test` → **55 passed**; `flutter analyze` → **0 issues**. No env var, network,
+`flutter test` → **61 passed**; `flutter analyze` → **0 issues**. No env var, network,
 credential, microphone, or device is required at any point.
 
 ## Docs vs. code — reconciled ✅

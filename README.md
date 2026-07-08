@@ -26,6 +26,22 @@ mid-range (~3 GB RAM) Android devices treated as a hard constraint.
 | **Correct** | **Confetti** + happy buddy + a "You did it!" Success state. |
 | **Progression** | A 3-question sequence (with 3/4/5 options) demonstrates the data-driven engine live; progress dots + "Next question" / "Read it again". |
 
+## 🌟 Extras (beyond the brief)
+
+- **Score & stars** — ⭐⭐⭐ per question (fewer wrong tries = more stars) with a running
+  total and a finish summary.
+- **Word-highlight narration** — the story text lights up word-by-word as Pip reads
+  (native TTS progress; graceful fallback on web).
+- **Sound effects + mute** — gentle bundled chimes on correct/wrong, with a mute toggle
+  that **persists across launches** (`shared_preferences`).
+- **Stop control** — a child can stop the story mid-read.
+- **Resilient remote TTS** — ElevenLabs auto-falls-back to native TTS on error, and its
+  audio actually plays via `just_audio` (cached by content hash).
+- **Delightful, cheap visuals** — animated sky + drifting clouds, a talking-mouth buddy,
+  staggered option-tile entrances — all `RepaintBoundary`-isolated and reduced-motion aware.
+- **Accessibility** — screen-reader live announcements per phase, reduced-motion support,
+  large tap targets, high contrast.
+
 ---
 
 ## 🧱 Project structure
@@ -69,7 +85,7 @@ flutter run -d chrome --dart-define=QUIZ_ENDPOINT=https://your.api/quiz
 ### Tests & static analysis (fully offline, zero credentials)
 ```bash
 flutter analyze        # 0 issues (strict lints)
-flutter test           # 49 tests pass
+flutter test           # 61 tests pass
 ```
 
 ---
@@ -171,5 +187,6 @@ Success) → **Next question** through the 3/4/5-option sequence.
 
 ## 🧪 Tech
 
-Flutter 3.44 · Dart 3.12 · Riverpod · `flutter_tts` · `confetti` · `http` · `crypto`.
-No credentials or devices required to build, analyse, or test.
+Flutter 3.44 · Dart 3.12 · Riverpod · `flutter_tts` · `just_audio` · `confetti` · `http` ·
+`crypto` · `shared_preferences`. **61 tests**, `flutter analyze` clean. No credentials or
+devices required to build, analyse, or test.

@@ -7,7 +7,7 @@ Android.
 
 | Metric | Baseline (Phase 2 v1) | Current | Notes |
 |---|---|---|---|
-| Tests passing (offline, 0 creds) | 48 | **55** | unit + widget + wiring |
+| Tests passing (offline, 0 creds) | 48 | **61** | unit + widget + wiring |
 | `flutter analyze` issues | 0 | **0** | strict lints (`strict-casts`, trailing commas, single quotes, const) |
 | Web release build | ✅ | ✅ | `√ Built build\web` |
 | Data-driven proof | 3/4/5 option tests | 3/4/5 tests **+ live 3-question sequence** | renderer never assumes a count |
@@ -17,7 +17,8 @@ Android.
 | RepaintBoundary-isolated animations | buddy, confetti, shake | same | prevents whole-tree repaint |
 | Image assets | 0 | 0 | buddy is a vector `CustomPainter` |
 | Direct dependencies | 5 | 5 | riverpod, flutter_tts, confetti, http, crypto |
-| Reduced-motion support | ❌ | ✅ | buddy + confetti honour `MediaQuery.disableAnimations` |
+| Direct dependencies | 5 | 7 | + just_audio, shared_preferences |
+| Reduced-motion support | ❌ | ✅ | buddy + confetti + sky honour `MediaQuery.disableAnimations` |
 | Remote-TTS resilience | none | ✅ | `FallbackNarrator`: ElevenLabs → native auto-fallback on error |
 | Screen-reader announcements | ❌ | ✅ | `liveRegion` status per phase; decorative buddy `ExcludeSemantics` |
 | Watchdog (missing-completion) coverage | indirect | ✅ | directly tested via injectable duration |
