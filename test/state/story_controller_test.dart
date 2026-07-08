@@ -5,6 +5,8 @@ import 'package:ultimate_ai_narrator/state/story_controller.dart';
 
 import '../support/fakes.dart';
 
+const String kStory = 'Once upon a test tale, a merry little test.';
+
 Future<void> tick([int ms = 2]) =>
     Future<void>.delayed(Duration(milliseconds: ms));
 
@@ -30,13 +32,13 @@ void main() {
   });
 
   test('readStory → preparing and calls speak with the story text', () {
-    controller.readStory();
+    controller.readStory(kStory);
     expect(controller.currentPhase, isA<PhasePreparing>());
-    expect(narrator.speakCalls, <String>[StoryController.storyText]);
+    expect(narrator.speakCalls, <String>[kStory]);
   });
 
   test('happy path: preparing → narrating → revealing → quiz', () async {
-    controller.readStory();
+    controller.readStory(kStory);
 
     narrator.emit(const NarrationSpeaking());
     await tick();
@@ -51,7 +53,7 @@ void main() {
   });
 
   test('duplicate/late completion does not double-advance past quiz', () async {
-    controller.readStory();
+    controller.readStory(kStory);
     narrator.emit(const NarrationSpeaking());
     await tick();
     narrator.emit(const NarrationCompleted());
@@ -65,7 +67,7 @@ void main() {
   });
 
   test('error while preparing → PhaseError, then retry re-speaks', () async {
-    controller.readStory();
+    controller.readStory(kStory);
     narrator.emit(const NarrationError('no sound'));
     await tick();
     expect(controller.currentPhase, isA<PhaseError>());
@@ -81,7 +83,7 @@ void main() {
     controller.markSolved();
     expect(controller.currentPhase, isA<PhaseIdle>());
 
-    controller.readStory();
+    controller.readStory(kStory);
     narrator.emit(const NarrationSpeaking());
     await tick();
     narrator.emit(const NarrationCompleted());
@@ -94,7 +96,7 @@ void main() {
 
   test('stopReading from narrating returns to idle and stops the narrator',
       () async {
-    controller.readStory();
+    controller.readStory(kStory);
     narrator.emit(const NarrationSpeaking());
     await tick();
     expect(controller.currentPhase, isA<PhaseNarrating>());
@@ -117,7 +119,7 @@ void main() {
       n.dispose();
     });
 
-    c.readStory();
+    c.readStory(kStory);
     n.emit(const NarrationSpeaking());
     await tick();
     expect(c.currentPhase, isA<PhaseNarrating>());

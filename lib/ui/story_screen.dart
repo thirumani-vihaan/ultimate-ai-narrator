@@ -5,7 +5,6 @@ import '../core/theme/peblo_theme.dart';
 import '../state/app_phase.dart';
 import '../state/providers.dart';
 import '../state/quiz_state.dart';
-import '../state/story_controller.dart';
 import 'widgets/buddy_character.dart';
 import 'widgets/brand_background.dart';
 import 'widgets/celebration_overlay.dart';
@@ -23,6 +22,8 @@ class StoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phase = ref.watch(storyControllerProvider);
     final story = ref.read(storyControllerProvider.notifier);
+    final package = ref.watch(activeStoryProvider);
+    final storyText = package?.story ?? '';
     final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     // Bridge: when the quiz becomes solved, tell the story controller to
@@ -73,7 +74,7 @@ class StoryScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        const _Header(),
+                        _Header(title: package?.title ?? 'Story Buddy'),
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,14 +89,14 @@ class StoryScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 22),
                             StoryCard(
-                              text: StoryController.storyText,
+                              text: storyText,
                               highlighted: phase is PhaseNarrating,
                             ),
                           ],
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 20, bottom: 8),
-                          child: _BottomArea(phase: phase),
+                          child: _BottomArea(phase: phase, storyText: storyText),
                         ),
                       ],
                     ),
@@ -114,6 +115,12 @@ class StoryScreen extends ConsumerWidget {
             top: 4,
             right: 4,
             child: SafeArea(child: _MuteButton()),
+          ),
+          // New story, top-left.
+          const Positioned(
+            top: 4,
+            left: 4,
+            child: SafeArea(child: _NewStoryButton()),
           ),
           // Screen-reader live announcements (its own widget so it doesn't
           // rebuild the whole screen on quiz changes).
@@ -173,39 +180,70 @@ class _MuteButton extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({required this.title});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Story Buddy',
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w700,
-            color: PebloColors.primaryDark,
+    return Padding(
+      padding: const EdgeInsets.only(right: 44, left: 40),
+      child: Column(
+        children: <Widget>[
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: PebloColors.primaryDark,
+              height: 1.1,
+            ),
           ),
-        ),
-        Text(
-          "Tap the button and I'll read you a story! 🎧",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: PebloColors.ink,
+          const SizedBox(height: 2),
+          const Text(
+            'Your very own story ✨',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: PebloColors.ink,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Returns to the "create story" flow to make a brand-new adventure.
+class _NewStoryButton extends ConsumerWidget {
+  const _NewStoryButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      tooltip: 'Make a new story',
+      onPressed: () {
+        ref.read(storyControllerProvider.notifier).resetToIdle();
+        ref.read(activeStoryProvider.notifier).state = null;
+      },
+      icon: const Icon(
+        Icons.auto_awesome_rounded,
+        color: PebloColors.primary,
+        size: 26,
+      ),
     );
   }
 }
 
 /// Swaps the bottom content based on the current phase.
 class _BottomArea extends ConsumerWidget {
-  const _BottomArea({required this.phase});
+  const _BottomArea({required this.phase, required this.storyText});
 
   final StoryPhase phase;
+  final String storyText;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,7 +259,7 @@ class _BottomArea extends ConsumerWidget {
         PhaseIdle() => ReadButton(
             key: const ValueKey<String>('read'),
             busy: false,
-            onPressed: story.readStory,
+            onPressed: () => story.readStory(storyText),
           ),
         PhasePreparing() => const ReadButton(
             key: ValueKey<String>('preparing'),
@@ -325,12 +363,13 @@ class _QuizArea extends ConsumerWidget {
     final quiz = ref.watch(quizControllerProvider);
     final quizController = ref.read(quizControllerProvider.notifier);
     final story = ref.read(storyControllerProvider.notifier);
+    final storyText = ref.watch(activeStoryProvider)?.story ?? '';
     final revealing = phase is PhaseRevealing;
 
     if (quiz.status == QuizStatus.error) {
       return ErrorRetry(
         message: quiz.errorMessage ?? 'We could not load the quiz.',
-        onRetry: quizController.load,
+        onRetry: quizController.reset,
       );
     }
 
@@ -361,7 +400,7 @@ class _QuizArea extends ConsumerWidget {
               max: quiz.maxStars,
               onRestart: () {
                 quizController.reset();
-                story.readStory();
+                story.readStory(storyText);
               },
             )
           else

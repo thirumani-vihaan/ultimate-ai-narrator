@@ -6,28 +6,33 @@ import 'package:ultimate_ai_narrator/haptics/haptics.dart';
 import 'package:ultimate_ai_narrator/narration/fake_narrator.dart';
 import 'package:ultimate_ai_narrator/quiz/quiz_models.dart';
 import 'package:ultimate_ai_narrator/state/providers.dart';
+import 'package:ultimate_ai_narrator/story/story_models.dart';
 import 'package:ultimate_ai_narrator/ui/widgets/option_tile.dart';
 
 import '../support/fakes.dart';
 
 /// End-to-end smoke test of the full flow, driven entirely by fakes (no device,
-/// no credentials): read → narrate → quiz reveal → wrong feedback → success.
-/// Uses fixed `pump(Duration)` steps because the buddy animation repeats forever
-/// (so `pumpAndSettle` would never return).
+/// no credentials): a generated story is active → read → narrate → quiz reveal →
+/// wrong feedback → success. Uses fixed `pump(Duration)` steps because the buddy
+/// animation repeats forever (so `pumpAndSettle` would never return).
 void main() {
   testWidgets('read → narrate → quiz → wrong → correct → success',
       (tester) async {
-    // Use a tall phone-sized surface so all content fits and options are
-    // tappable (the default 800×600 puts them below the fold).
     tester.view.physicalSize = const Size(1170, 2600);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final question = Question(
-      prompt: 'What colour?',
-      options: const <String>['Red', 'Green', 'Blue', 'Yellow'],
-      answer: 'Blue',
+    final package = StoryPackage(
+      title: 'Test Tale',
+      story: 'A short and merry little story.',
+      quiz: <Question>[
+        Question(
+          prompt: 'What colour?',
+          options: const <String>['Red', 'Green', 'Blue', 'Yellow'],
+          answer: 'Blue',
+        ),
+      ],
     );
 
     final sfx = FakeSoundEffects();
@@ -40,9 +45,7 @@ void main() {
               speakDelay: const Duration(milliseconds: 1),
             ),
           ),
-          quizRepositoryProvider.overrideWith(
-            (ref) => FakeQuizRepository(<Question>[question]),
-          ),
+          activeStoryProvider.overrideWith((ref) => package),
           hapticsProvider.overrideWith((ref) => FakeHaptics()),
           soundEffectsProvider.overrideWith((ref) => sfx),
         ],
@@ -51,14 +54,12 @@ void main() {
     );
     await tester.pump();
 
-    // Idle: the call-to-action is visible.
+    // A story is active, so the read call-to-action is visible.
     expect(find.text('Read Me a Story'), findsOneWidget);
 
     await tester.tap(find.text('Read Me a Story'));
     await tester.pump(); // → preparing
-    // Advance the fake clock past prepare + speak + reveal (650ms) timers.
     await tester.pump(const Duration(seconds: 1));
-    // Let the quiz's reveal (AnimatedSwitcher, 350ms) finish settling.
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
 

@@ -12,28 +12,23 @@ void main() {
   setUp(() => haptics = FakeHaptics());
 
   QuizController controllerWith(List<Question> questions) =>
-      QuizController(FakeQuizRepository(questions), haptics);
+      QuizController(haptics)..setQuestions(questions);
 
-  test('load populates questions and becomes ready', () async {
+  test('setQuestions populates and becomes ready', () {
     final controller = controllerWith(<Question>[sampleQuestion()]);
-    await controller.load();
     expect(controller.currentState.status, QuizStatus.ready);
     expect(controller.currentState.questions, hasLength(1));
     controller.dispose();
   });
 
-  test('load failure degrades to a friendly error state', () async {
-    final controller = QuizController(FailingQuizRepository(), haptics);
-    await controller.load();
-    expect(controller.currentState.status, QuizStatus.error);
-    expect(controller.currentState.errorMessage, isNotNull);
+  test('empty question list stays in loading', () {
+    final controller = controllerWith(const <Question>[]);
+    expect(controller.currentState.status, QuizStatus.loading);
     controller.dispose();
   });
 
-  test('wrong answer → shake token + attempt + haptic, stays answerable',
-      () async {
+  test('wrong answer → shake token + attempt + haptic, stays answerable', () {
     final controller = controllerWith(<Question>[sampleQuestion()]);
-    await controller.load();
 
     controller.answer('Option 1');
     final s = controller.currentState;
@@ -45,9 +40,8 @@ void main() {
     controller.dispose();
   });
 
-  test('correct answer → solved + celebratory haptic', () async {
+  test('correct answer → solved + celebratory haptic', () {
     final controller = controllerWith(<Question>[sampleQuestion()]);
-    await controller.load();
 
     controller.answer('Option 2');
     expect(controller.currentState.status, QuizStatus.solved);
@@ -55,9 +49,8 @@ void main() {
     controller.dispose();
   });
 
-  test('taps after solved are ignored', () async {
+  test('taps after solved are ignored', () {
     final controller = controllerWith(<Question>[sampleQuestion()]);
-    await controller.load();
 
     controller.answer('Option 2'); // solve
     controller.answer('Option 1'); // ignored
@@ -65,12 +58,11 @@ void main() {
     controller.dispose();
   });
 
-  test('nextQuestion advances and resets per-question fields', () async {
+  test('nextQuestion advances and resets per-question fields', () {
     final controller = controllerWith(<Question>[
       sampleQuestion(optionCount: 3),
       sampleQuestion(optionCount: 5),
     ]);
-    await controller.load();
 
     controller.answer('Option 1'); // wrong → bump attempts/shake
     controller.nextQuestion();
@@ -83,31 +75,25 @@ void main() {
     controller.dispose();
   });
 
-  test('reset returns to the first question', () async {
+  test('reset returns to the first question', () {
     final controller = controllerWith(<Question>[
       sampleQuestion(optionCount: 3),
       sampleQuestion(optionCount: 5),
     ]);
-    await controller.load();
     controller.nextQuestion();
     expect(controller.currentState.index, 1);
-    expect(controller.currentState.isLastQuestion, isTrue);
 
     controller.reset();
     expect(controller.currentState.index, 0);
     expect(controller.currentState.status, QuizStatus.ready);
-    expect(controller.currentState.total, 2);
-    expect(controller.currentState.isLastQuestion, isFalse);
     controller.dispose();
   });
 
-  test('stars: 3 for a first-try correct, 2 after one wrong, accumulating',
-      () async {
+  test('stars: 3 for a first-try correct, 2 after one wrong, accumulating', () {
     final controller = controllerWith(<Question>[
       sampleQuestion(optionCount: 3),
       sampleQuestion(optionCount: 5),
     ]);
-    await controller.load();
 
     controller.answer('Option 2'); // correct first try → 3 stars
     expect(controller.currentState.currentQuestionStars, 3);

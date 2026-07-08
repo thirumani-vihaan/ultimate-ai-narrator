@@ -1,40 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/logging.dart';
 import '../haptics/haptics.dart';
-import '../quiz/quiz_repository.dart';
+import '../quiz/quiz_models.dart';
 import 'quiz_state.dart';
 
 /// Owns quiz answer logic. Pure state + side-effects (haptics) — no widgets — so
-/// every rule is unit-testable offline.
+/// every rule is unit-testable offline. Questions are supplied by whatever
+/// produced them (a generated story package, an asset, a backend).
 class QuizController extends StateNotifier<QuizState> {
-  QuizController(this._repo, this._haptics) : super(const QuizState.loading());
+  QuizController(this._haptics) : super(const QuizState.loading());
 
-  final QuizRepository _repo;
   final Haptics _haptics;
 
-  /// Current state — exposed for tests only (production reads via the provider).
   @visibleForTesting
   QuizState get currentState => state;
 
-  /// Loads questions from the (injected) repository. On any failure it degrades
-  /// to a friendly error state instead of throwing across the boundary.
-  Future<void> load() async {
-    try {
-      final questions = await _repo.loadQuestions();
-      state = QuizState(
-        questions: questions,
-        index: 0,
-        status: QuizStatus.ready,
-      );
-    } catch (e, s) {
-      logError('QuizController.load', e, s);
-      state = state.copyWith(
-        status: QuizStatus.error,
-        errorMessage: 'We could not load the quiz. Please try again.',
-      );
-    }
+  /// Load a set of questions (e.g. from the generated story). An empty list
+  /// keeps the loading state.
+  void setQuestions(List<Question> questions) {
+    state = QuizState(
+      questions: questions,
+      index: 0,
+      status: questions.isEmpty ? QuizStatus.loading : QuizStatus.ready,
+    );
   }
 
   /// Handle a tapped option. Wrong → shake + haptic, stays answerable. Correct →
@@ -64,7 +53,7 @@ class QuizController extends StateNotifier<QuizState> {
 
   /// Advance to the next question in the sequence, if any. Builds a fresh state
   /// so per-question fields (lastSelected, attempts, shakeToken) reset cleanly
-  /// (copyWith can't null-out nullable fields).
+  /// (copyWith can't null-out nullable fields), preserving the running stars.
   void nextQuestion() {
     if (state.index + 1 < state.questions.length) {
       state = QuizState(

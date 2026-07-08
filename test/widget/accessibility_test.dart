@@ -5,8 +5,7 @@ import 'package:ultimate_ai_narrator/haptics/haptics.dart';
 import 'package:ultimate_ai_narrator/narration/fake_narrator.dart';
 import 'package:ultimate_ai_narrator/quiz/quiz_models.dart';
 import 'package:ultimate_ai_narrator/state/providers.dart';
-
-import '../support/fakes.dart';
+import 'package:ultimate_ai_narrator/story/story_models.dart';
 
 void main() {
   testWidgets('exposes a live-region status announcement for screen readers',
@@ -16,10 +15,18 @@ void main() {
       ProviderScope(
         overrides: <Override>[
           narratorProvider.overrideWith((ref) => FakeNarrator()),
-          quizRepositoryProvider.overrideWith(
-            (ref) => FakeQuizRepository(<Question>[
-              Question(prompt: 'q', options: const <String>['a', 'b'], answer: 'a'),
-            ]),
+          activeStoryProvider.overrideWith(
+            (ref) => StoryPackage(
+              title: 'T',
+              story: 'A tale.',
+              quiz: <Question>[
+                Question(
+                  prompt: 'q',
+                  options: const <String>['a', 'b'],
+                  answer: 'a',
+                ),
+              ],
+            ),
           ),
           hapticsProvider.overrideWith((ref) => FakeHaptics()),
         ],

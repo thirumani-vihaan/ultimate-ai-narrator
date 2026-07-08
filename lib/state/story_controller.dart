@@ -21,12 +21,10 @@ class StoryController extends StateNotifier<StoryPhase> {
     _sub = _narrator.state.listen(_onNarration);
   }
 
-  /// The story to narrate (from the spec).
-  static const String storyText =
-      'Once upon a time, a clever little robot named Pip lost his shiny blue '
-      'gear in the Whispering Woods...';
-
   final Narrator _narrator;
+
+  /// The text most recently requested (for retry and the watchdog window).
+  String _lastText = '';
 
   /// How long the "revealing" transition lasts before the quiz becomes
   /// interactive (matches the reveal animation).
@@ -45,16 +43,18 @@ class StoryController extends StateNotifier<StoryPhase> {
   @visibleForTesting
   StoryPhase get currentPhase => state;
 
-  /// Intent: begin (or restart) narration.
-  void readStory() {    if (state is PhasePreparing || state is PhaseNarrating) return;
+  /// Intent: begin (or restart) narration of [text].
+  void readStory(String text) {
+    if (state is PhasePreparing || state is PhaseNarrating) return;
     _cancelTimers();
+    _lastText = text;
     state = const PhasePreparing();
-    _narrator.speak(storyText);
+    _narrator.speak(text);
   }
 
   /// Intent: retry after an error.
   void retry() {
-    if (state is PhaseError) readStory();
+    if (state is PhaseError) readStory(_lastText);
   }
 
   /// Intent: stop the narration and return to idle (child taps "Stop").
@@ -64,6 +64,13 @@ class StoryController extends StateNotifier<StoryPhase> {
       _narrator.stop();
       state = const PhaseIdle();
     }
+  }
+
+  /// Reset to idle for a brand-new story (called when a new story is generated).
+  void resetToIdle() {
+    _cancelTimers();
+    _narrator.stop();
+    state = const PhaseIdle();
   }
 
   /// Called when the quiz has been solved, to enter the celebratory state.
@@ -120,7 +127,7 @@ class StoryController extends StateNotifier<StoryPhase> {
   /// the child is never stuck on a spinner (guards flaky TTS engines / web).
   void _startWatchdog() {
     _watchdogTimer?.cancel();
-    _watchdogTimer = Timer(watchdogOverride ?? _watchdogDuration(storyText), () {
+    _watchdogTimer = Timer(watchdogOverride ?? _watchdogDuration(_lastText), () {
       if (state is PhaseNarrating) _beginReveal();
     });
   }

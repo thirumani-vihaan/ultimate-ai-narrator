@@ -3,15 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../audio/sound_effects.dart';
 import '../haptics/haptics.dart';
 import '../narration/narrator.dart';
-import '../quiz/quiz_repository.dart';
 import '../settings/settings_store.dart';
+import '../story/story_generator.dart';
+import '../story/story_models.dart';
 import 'app_phase.dart';
 import 'mute_notifier.dart';
 import 'quiz_controller.dart';
 import 'quiz_state.dart';
 import 'story_controller.dart';
 
-/// Injectable seams. All three MUST be overridden — in `main.dart`
+/// Injectable seams. All MUST be overridden — in `main.dart`
 /// (`buildRealOverrides`) for production, or in tests with fakes. They throw by
 /// default so a missing wire fails loudly instead of silently doing nothing.
 final Provider<Narrator> narratorProvider = Provider<Narrator>((ref) {
@@ -20,18 +21,24 @@ final Provider<Narrator> narratorProvider = Provider<Narrator>((ref) {
   );
 });
 
-final Provider<QuizRepository> quizRepositoryProvider =
-    Provider<QuizRepository>((ref) {
-  throw UnimplementedError(
-    'quizRepositoryProvider must be overridden (see main.dart / tests).',
-  );
-});
-
 final Provider<Haptics> hapticsProvider = Provider<Haptics>((ref) {
   throw UnimplementedError(
     'hapticsProvider must be overridden (see main.dart / tests).',
   );
 });
+
+/// Turns a child's choices into a personalised story + quiz. Defaults to the
+/// on-device engine (no key); `main.dart` upgrades it to the real LLM when a key
+/// is present (with the on-device engine as fallback).
+final Provider<StoryGenerator> storyGeneratorProvider =
+    Provider<StoryGenerator>((ref) => const TemplateStoryGenerator());
+
+/// The currently active generated story (null → show the "create story" flow).
+final StateProvider<StoryPackage?> activeStoryProvider =
+    StateProvider<StoryPackage?>((ref) => null);
+
+/// True while a story is being generated (drives the "conjuring" loading state).
+final StateProvider<bool> generatingProvider = StateProvider<bool>((ref) => false);
 
 /// Persistent settings store. Defaults to in-memory (tests); `main.dart`
 /// overrides it with the shared_preferences-backed implementation.
@@ -66,10 +73,12 @@ final StateNotifierProvider<StoryController, StoryPhase> storyControllerProvider
   return StoryController(narrator);
 });
 
-/// Owns quiz state; kicks off loading immediately.
+/// Owns quiz state; sourced from the active generated story's questions.
 final StateNotifierProvider<QuizController, QuizState> quizControllerProvider =
     StateNotifierProvider<QuizController, QuizState>((ref) {
-  final repo = ref.watch(quizRepositoryProvider);
   final haptics = ref.watch(hapticsProvider);
-  return QuizController(repo, haptics)..load();
+  final package = ref.watch(activeStoryProvider);
+  final controller = QuizController(haptics);
+  if (package != null) controller.setQuestions(package.quiz);
+  return controller;
 });
