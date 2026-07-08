@@ -61,6 +61,15 @@ final StreamProvider<int> narrationProgressProvider = StreamProvider<int>((ref) 
   return const Stream<int>.empty();
 });
 
+/// Human label for the currently-active voice (e.g. "ElevenLabs · Flash").
+final StreamProvider<String> voiceLabelProvider = StreamProvider<String>((ref) {
+  final narrator = ref.watch(narratorProvider);
+  if (narrator is NamedVoice) {
+    return (narrator as NamedVoice).voiceLabel;
+  }
+  return Stream<String>.value('Built-in voice');
+});
+
 /// UI sound effects. Defaults to silent so tests need no override; `main.dart`
 /// overrides it with the real just_audio implementation.
 final Provider<SoundEffects> soundEffectsProvider =

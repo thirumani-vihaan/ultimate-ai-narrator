@@ -12,7 +12,7 @@ import 'narrator.dart';
 /// The engine's start/completion/error callbacks are the only source of truth
 /// for state; they map 1:1 onto [NarrationState]. `speak` never throws — any
 /// failure is delivered as a [NarrationError] instead.
-class FlutterTtsNarrator implements Narrator, ProgressiveNarrator {
+class FlutterTtsNarrator implements Narrator, ProgressiveNarrator, NamedVoice {
   FlutterTtsNarrator({FlutterTts? tts}) : _tts = tts ?? FlutterTts() {
     unawaited(_configure());
   }
@@ -32,6 +32,9 @@ class FlutterTtsNarrator implements Narrator, ProgressiveNarrator {
 
   @override
   Stream<int> get spokenChars => _progress.stream;
+
+  @override
+  Stream<String> get voiceLabel => Stream<String>.value('Built-in voice');
 
   Future<void> _configure() async {
     try {

@@ -111,7 +111,7 @@ class ElevenLabsClient {
 /// identical text never re-hits the quota), then plays it via [AudioSink].
 /// Selected only when `ELEVENLABS_API_KEY` is present; native TTS remains the
 /// default. `speak` never throws — failures surface as [NarrationError].
-class ElevenLabsNarrator implements Narrator {
+class ElevenLabsNarrator implements Narrator, NamedVoice {
   ElevenLabsNarrator({
     required String apiKey,
     String model = 'eleven_flash_v2_5',
@@ -119,6 +119,7 @@ class ElevenLabsNarrator implements Narrator {
     AudioCache? cache,
     AudioSink? sink,
   })  : _client = client ?? ElevenLabsClient(apiKey: apiKey, modelId: model),
+        _voiceLabel = 'ElevenLabs · ${_friendlyModel(model)}',
         _cache = cache ?? InMemoryAudioCache(),
         _sink = sink ?? const SilentAudioSink();
 
@@ -128,6 +129,7 @@ class ElevenLabsNarrator implements Narrator {
   final ElevenLabsClient _client;
   final AudioCache _cache;
   final AudioSink _sink;
+  final String _voiceLabel;
 
   final StreamController<NarrationState> _controller =
       StreamController<NarrationState>.broadcast();
@@ -135,6 +137,17 @@ class ElevenLabsNarrator implements Narrator {
 
   @override
   Stream<NarrationState> get state => _controller.stream;
+
+  @override
+  Stream<String> get voiceLabel => Stream<String>.value(_voiceLabel);
+
+  static String _friendlyModel(String model) {
+    final m = model.toLowerCase();
+    if (m.contains('flash')) return 'Flash';
+    if (m.contains('turbo')) return 'Turbo';
+    if (m.contains('multilingual')) return 'Multilingual';
+    return model;
+  }
 
   @override
   Future<void> speak(String text) async {

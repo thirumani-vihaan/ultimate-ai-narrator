@@ -96,7 +96,13 @@ class StoryScreen extends ConsumerWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 20, bottom: 8),
-                          child: _BottomArea(phase: phase, storyText: storyText),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              _BottomArea(phase: phase, storyText: storyText),
+                              const _VoiceCredit(),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -160,9 +166,63 @@ class _LiveAnnouncer extends ConsumerWidget {
   }
 }
 
+/// Shows the currently-active voice (e.g. "ElevenLabs · Flash") and, when
+/// ElevenLabs is speaking, a "Powered by ElevenLabs" credit.
+class _VoiceCredit extends ConsumerWidget {
+  const _VoiceCredit();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final label = ref
+        .watch(voiceLabelProvider)
+        .maybeWhen(data: (v) => v, orElse: () => '');
+    if (label.isEmpty) return const SizedBox.shrink();
+    final poweredByEleven = label.toLowerCase().contains('elevenlabs');
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Icon(
+                Icons.graphic_eq_rounded,
+                size: 15,
+                color: PebloColors.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Voice: $label',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: PebloColors.ink.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          if (poweredByEleven)
+            const Padding(
+              padding: EdgeInsets.only(top: 3),
+              child: Text(
+                'Powered by ElevenLabs',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: PebloColors.primary,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Toggles UI sound effects on/off.
-class _MuteButton extends ConsumerWidget {
-  const _MuteButton();
+class _MuteButton extends ConsumerWidget {  const _MuteButton();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

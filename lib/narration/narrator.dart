@@ -56,3 +56,10 @@ abstract interface class Narrator {
 abstract interface class ProgressiveNarrator {
   Stream<int> get spokenChars;
 }
+
+/// Optional capability: narrators that can report a human label for the voice
+/// currently in use (e.g. "ElevenLabs · Flash" or "Built-in voice"). Emits the
+/// current value immediately on subscription and again whenever it changes.
+abstract interface class NamedVoice {
+  Stream<String> get voiceLabel;
+}
