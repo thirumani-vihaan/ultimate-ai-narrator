@@ -1,0 +1,20 @@
+# RISK_LOG — Ultimate AI Narrator
+
+Append-only. Each risk: description → mitigation. Deviations discovered during Phase 2 get logged here too.
+
+| # | Risk | Severity | Mitigation |
+|---|------|----------|------------|
+| R1 | `flutter_tts` is a platform-channel plugin → **not usable in `flutter test`** (no platform channels on the Dart VM). | HIGH | All narration behind the `Narrator` interface; unit/widget tests use `FakeNarrator`. Real plugin exercised only in the web demo / an integration test. **Spike T1** confirms real behavior. |
+| R2 | **Completion callback** (`setCompletionHandler`) may fire late, twice, or not at all on some engines/web → audio→quiz reveal could double-fire or hang. | HIGH | Phase machine treats completion as an **idempotent** event: once in `revealing`/`quiz`, further narration events are ignored. Watchdog: if no completion within `estimatedDuration + buffer`, transition anyway. Covered by T4 duplicate-completion + timeout tests. |
+| R3 | **Data-driven quiz** must handle 3/4/5 options without code change — the top-evaluated requirement; easy to accidentally hardcode 4. | HIGH | Option count = `options.length`; renderer is a `.map` over options. Fixtures + tests for 3/4/5 (T2, T7). Never reference index 0–3 literally. |
+| R4 | **60fps confetti / shake on ~3GB Android** — particle overdraw or unbounded rebuilds blow the hard budget. | HIGH (hard limit) | Cap particles; `RepaintBoundary` around animations; `AnimatedBuilder` (not `setState`); stop+dispose controllers; `select`-scoped rebuilds. Profile in Phase 3 and record before/after. |
+| R5 | **Malformed / unexpected quiz JSON** (missing answer, answer∉options, empty options, non-JSON). | MED | `Question.fromJson` validates and throws typed exceptions; repository→controller→friendly error state. Fixtures for each bad case (T2). |
+| R6 | **No Android device on the build machine** → cannot capture real Android frame timing or build an APK. | MED | Verify via `flutter test`/`analyze` + Flutter DevTools timeline on **web profile** run; reason explicitly about mobile and document the measurement limitation in README's performance section. |
+| R7 | **ElevenLabs quota / 429 / network down** (bonus path). | MED | Cache by text hash; on error fall back to native TTS and surface a friendly retry; separate "processing latency" vs "backoff wait" in metrics. Key never required for tests. |
+| R8 | **Web vs Android TTS differences** (voice availability, completion timing) — demo is web, target is Android. | MED | Interface isolates differences; document that the same codebase targets Android; watchdog (R2) covers timing variance across platforms. |
+| R9 | **Memory leaks** from audio-completion closures / animation controllers (spec explicitly calls this out). | MED | Every controller/subscription `dispose()`d; narration subscription cancelled on terminal event and on controller dispose; a test asserts dispose cancels the subscription. |
+| R10 | **Secret leakage** — committing a real ElevenLabs key. | MED | `.env` + `.gitignore`; pre-commit diff grep for key-shaped strings; key read from env only, never written to source or fixtures. |
+| R11 | **Overbuilding past the hard budget** in pursuit of "10 steps beyond." | MED | Every delight feature is a Phase-3 ROI candidate measured against the perf budget; any regression to frame/memory budget → reverted (guardrail §3.4). |
+
+## Spike results (filled during Phase 2)
+- **T1 (flutter_tts completion/web):** _pending_
