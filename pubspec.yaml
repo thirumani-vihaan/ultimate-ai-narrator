@@ -79,6 +79,11 @@ flutter:
     - assets/sfx/correct.wav
     - assets/sfx/wrong.wav
 
+  fonts:
+    - family: Fredoka
+      fonts:
+        - asset: assets/fonts/Fredoka.ttf
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

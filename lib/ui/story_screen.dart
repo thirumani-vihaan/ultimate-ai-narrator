@@ -7,11 +7,11 @@ import '../state/providers.dart';
 import '../state/quiz_state.dart';
 import '../state/story_controller.dart';
 import 'widgets/buddy_character.dart';
+import 'widgets/brand_background.dart';
 import 'widgets/celebration_overlay.dart';
 import 'widgets/error_retry.dart';
 import 'widgets/quiz_panel.dart';
 import 'widgets/read_button.dart';
-import 'widgets/sky_background.dart';
 import 'widgets/story_card.dart';
 
 /// The single screen: buddy + story + a bottom area that swaps between the read
@@ -54,7 +54,9 @@ class StoryScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          Positioned.fill(child: SkyBackground(reduceMotion: reduceMotion)),
+          Positioned.fill(
+            child: BrandBackground(reduceMotion: reduceMotion),
+          ),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -69,25 +71,32 @@ class StoryScreen extends ConsumerWidget {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         const _Header(),
-                        const SizedBox(height: 4),
-                        Center(
-                          child: ExcludeSemantics(
-                            child: BuddyCharacter(
-                              mood: mood,
-                              reduceMotion: reduceMotion,
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Center(
+                              child: ExcludeSemantics(
+                                child: BuddyCharacter(
+                                  mood: mood,
+                                  reduceMotion: reduceMotion,
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 22),
+                            StoryCard(
+                              text: StoryController.storyText,
+                              highlighted: phase is PhaseNarrating,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        StoryCard(
-                          text: StoryController.storyText,
-                          highlighted: phase is PhaseNarrating,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20, bottom: 8),
+                          child: _BottomArea(phase: phase),
                         ),
-                        const SizedBox(height: 20),
-                        _BottomArea(phase: phase),
-                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -175,15 +184,15 @@ class _Header extends StatelessWidget {
           'Story Buddy',
           style: TextStyle(
             fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: PebloColors.primary,
+            fontWeight: FontWeight.w700,
+            color: PebloColors.primaryDark,
           ),
         ),
         Text(
           "Tap the button and I'll read you a story! 🎧",
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             color: PebloColors.ink,
           ),
         ),
@@ -245,7 +254,7 @@ class _ListeningHint extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
       decoration: BoxDecoration(
-        color: PebloColors.sky.withValues(alpha: 0.18),
+        color: PebloColors.cloud.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(28),
       ),
       child: const Row(
