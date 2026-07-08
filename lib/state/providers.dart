@@ -4,7 +4,9 @@ import '../audio/sound_effects.dart';
 import '../haptics/haptics.dart';
 import '../narration/narrator.dart';
 import '../quiz/quiz_repository.dart';
+import '../settings/settings_store.dart';
 import 'app_phase.dart';
+import 'mute_notifier.dart';
 import 'quiz_controller.dart';
 import 'quiz_state.dart';
 import 'story_controller.dart';
@@ -31,8 +33,16 @@ final Provider<Haptics> hapticsProvider = Provider<Haptics>((ref) {
   );
 });
 
-/// Whether UI sound effects are muted. Defaults to on (not muted).
-final StateProvider<bool> muteProvider = StateProvider<bool>((ref) => false);
+/// Persistent settings store. Defaults to in-memory (tests); `main.dart`
+/// overrides it with the shared_preferences-backed implementation.
+final Provider<SettingsStore> settingsStoreProvider =
+    Provider<SettingsStore>((ref) => InMemorySettingsStore());
+
+/// Whether UI sound effects are muted (persisted across launches).
+final StateNotifierProvider<MuteNotifier, bool> muteProvider =
+    StateNotifierProvider<MuteNotifier, bool>(
+  (ref) => MuteNotifier(ref.watch(settingsStoreProvider)),
+);
 
 /// Character-progress of the current narration (for word highlighting). Emits
 /// nothing if the active narrator doesn't report progress (e.g. remote audio).

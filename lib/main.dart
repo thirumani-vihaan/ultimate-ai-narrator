@@ -12,6 +12,7 @@ import 'narration/narrator.dart';
 import 'quiz/asset_quiz_repository.dart';
 import 'quiz/http_quiz_repository.dart';
 import 'quiz/quiz_repository.dart';
+import 'settings/settings_store.dart';
 import 'state/providers.dart';
 
 /// Optional configuration supplied at build time via `--dart-define` (works on
@@ -55,10 +56,12 @@ List<Override> buildRealOverrides() {
       ref.onDispose(sfx.dispose);
       return sfx;
     }),
+    settingsStoreProvider.overrideWith((ref) => SharedPrefsSettingsStore()),
   ];
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ProviderScope(
       overrides: buildRealOverrides(),

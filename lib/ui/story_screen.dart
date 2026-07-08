@@ -153,7 +153,7 @@ class _MuteButton extends ConsumerWidget {
     final muted = ref.watch(muteProvider);
     return IconButton(
       tooltip: muted ? 'Turn sounds on' : 'Turn sounds off',
-      onPressed: () => ref.read(muteProvider.notifier).state = !muted,
+      onPressed: () => ref.read(muteProvider.notifier).toggle(),
       icon: Icon(
         muted ? Icons.music_off_rounded : Icons.music_note_rounded,
         color: PebloColors.primary,
