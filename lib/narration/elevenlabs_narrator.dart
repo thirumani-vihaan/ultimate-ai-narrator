@@ -53,15 +53,21 @@ class SilentAudioSink implements AudioSink {
 
 /// Real ElevenLabs text-to-speech client. Injectable [http.Client] so tests
 /// exercise the real request/response/error paths with a fake transport.
+///
+/// Defaults to the **Flash** model (`eleven_flash_v2_5`), which is ~half the
+/// credit cost per character and lower latency than the multilingual model —
+/// friendlier to free-tier quotas.
 class ElevenLabsClient {
   ElevenLabsClient({
     required this.apiKey,
     this.voiceId = 'JBFqnCBsd6RMkjVDRZzb',
+    this.modelId = 'eleven_flash_v2_5',
     http.Client? client,
   }) : _client = client ?? http.Client();
 
   final String apiKey;
   final String voiceId;
+  final String modelId;
   final http.Client _client;
 
   Future<Uint8List> synthesize(String text) async {
@@ -80,7 +86,7 @@ class ElevenLabsClient {
             },
             body: jsonEncode(<String, dynamic>{
               'text': text,
-              'model_id': 'eleven_multilingual_v2',
+              'model_id': modelId,
             }),
           )
           .timeout(const Duration(seconds: 20));
@@ -108,10 +114,11 @@ class ElevenLabsClient {
 class ElevenLabsNarrator implements Narrator {
   ElevenLabsNarrator({
     required String apiKey,
+    String model = 'eleven_flash_v2_5',
     ElevenLabsClient? client,
     AudioCache? cache,
     AudioSink? sink,
-  })  : _client = client ?? ElevenLabsClient(apiKey: apiKey),
+  })  : _client = client ?? ElevenLabsClient(apiKey: apiKey, modelId: model),
         _cache = cache ?? InMemoryAudioCache(),
         _sink = sink ?? const SilentAudioSink();
 

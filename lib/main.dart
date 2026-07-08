@@ -18,6 +18,8 @@ import 'story/story_generator.dart';
 /// every platform including web). Empty by default → the credential-free,
 /// on-device paths are used.
 const String _elevenLabsKey = String.fromEnvironment('ELEVENLABS_API_KEY');
+const String _elevenLabsModel =
+    String.fromEnvironment('ELEVENLABS_MODEL', defaultValue: 'eleven_flash_v2_5');
 const String _openAiKey = String.fromEnvironment('OPENAI_API_KEY');
 
 /// THE single place real implementations are constructed and injected. Every
@@ -32,6 +34,9 @@ List<Override> buildRealOverrides() {
           ? FallbackNarrator(
               ElevenLabsNarrator(
                 apiKey: _elevenLabsKey,
+                // Value varies with --dart-define=ELEVENLABS_MODEL.
+                // ignore: avoid_redundant_argument_values
+                model: _elevenLabsModel,
                 sink: JustAudioSink(),
               ),
               FlutterTtsNarrator(),
