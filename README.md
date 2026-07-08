@@ -1,11 +1,26 @@
 # Ultimate AI Narrator 🎧🤖
 
-An **AI Story Buddy** for children: tap a big friendly button and *Pip the Robot* reads a
-short story aloud, then smoothly reveals a **fully data-driven** interactive quiz — with
-gentle "try again" feedback on a wrong answer and a confetti celebration on a correct one.
+An **AI Story Buddy** for children. The spec asks for a buddy that reads *one* story and
+asks *one* quiz — so I took it further: the child **designs their own adventure** (their
+name, a buddy animal, a magical place) and the app **generates a unique, personalised story
+*and* a matching quiz derived from that story**, then narrates it and quizzes them — with
+gentle "try again" feedback and a confetti celebration.
 
 Built for the **Peblo Flutter Developer Intern Challenge**, with performance on
 mid-range (~3 GB RAM) Android devices treated as a hard constraint.
+
+## 🌟 The headline: "Make YOUR Story" — an AI story + quiz generator
+
+- **The child creates the story.** Pick a name, a buddy (🦊🐉🐰🤖🦉) and a place
+  (🌲🚀🐚🍭☁️) → tap **"Make My Story!"**.
+- **The app generates it.** A `StoryGenerator` weaves those choices into a coherent tale,
+  then builds a quiz whose questions & answers are **derived from the generated story's own
+  facts** (not hard-coded) — so the "data-driven quiz" requirement now spans the *entire*
+  content, with genuinely varying 3/4/5-option questions.
+- **Mock-first, offline-safe.** A real **on-device generative engine**
+  (`TemplateStoryGenerator`) works with **zero keys / no network**; a real **LLM**
+  (`LlmStoryGenerator`, OpenAI-compatible, key-gated) is a drop-in upgrade that **falls back
+  to the on-device engine** on any error. Infinite, personalised, multi-story.
 
 > **Live demo target on the build machine:** Flutter **web** (Chrome), where `flutter_tts`
 > speaks via the browser Web Speech API — real narration, no API key. The same codebase
@@ -17,6 +32,7 @@ mid-range (~3 GB RAM) Android devices treated as a hard constraint.
 
 | Stage | Behaviour |
 |------|-----------|
+| **Create** | The child designs their adventure; the AI conjures a story + quiz. |
 | **Idle** | Buddy waits; a prominent **"Read Me a Story"** button. |
 | **Preparing** | Loading state ("Warming up my voice…") while TTS initialises. |
 | **Narrating** | Story card highlights; buddy "talks"; story is spoken aloud. |
@@ -188,5 +204,5 @@ Success) → **Next question** through the 3/4/5-option sequence.
 ## 🧪 Tech
 
 Flutter 3.44 · Dart 3.12 · Riverpod · `flutter_tts` · `just_audio` · `confetti` · `http` ·
-`crypto` · `shared_preferences`. **61 tests**, `flutter analyze` clean. No credentials or
+`crypto` · `shared_preferences`. **68 tests**, `flutter analyze` clean. No credentials or
 devices required to build, analyse, or test.

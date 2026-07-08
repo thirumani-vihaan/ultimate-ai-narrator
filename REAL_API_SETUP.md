@@ -25,14 +25,24 @@ Higher-quality narration. Default is the credential-free native/browser TTS.
 > ("Read Me a Story"), so playback is permitted. On Android/iOS there is no such gate.
 
 ## 2. Real quiz backend (optional)
-By default the quiz loads from `assets/quiz/quiz.json`. To fetch it from a live backend:
 
-- **Env var:** `QUIZ_ENDPOINT` (a URL returning the quiz JSON)
-- **How:** `flutter run -d chrome --dart-define=QUIZ_ENDPOINT=https://your.api/quiz`
-- **Effect:** `buildRealOverrides()` selects `HttpQuizRepository`. It accepts the same three
-  payload shapes (array / `{"questions":[…]}` / single object) and validates every field, so
-  a malformed response degrades to a friendly error instead of crashing.
+The quiz now ships **generated from the story** (see below), so there's no separate quiz
+endpoint to configure.
 
-## 3. Nothing is required for tests
+## 3. AI story generator (optional real LLM)
+
+Story + quiz are created by a `StoryGenerator`. The default is the **on-device engine**
+(no key, no network). To use a real LLM instead (with the on-device engine as fallback):
+
+- **Env var:** `OPENAI_API_KEY`
+- **Where to get it:** <https://platform.openai.com/api-keys>.
+- **How:** `flutter run -d chrome --dart-define=OPENAI_API_KEY=sk-...`
+- **Effect:** `buildRealOverrides()` selects `LlmStoryGenerator` (OpenAI-compatible chat
+  completions, strict-JSON response). On any error (network / bad status / malformed JSON)
+  it transparently falls back to the on-device engine — a story is always produced.
+- **Model/endpoint:** override `model` / `endpoint` on `LlmStoryGenerator` for other
+  OpenAI-compatible providers.
+
+## 4. Nothing is required for tests
 `flutter test` and `flutter analyze` run fully offline with fixtures/fakes. No env var,
 network, credential, microphone, or device is needed at any point.
