@@ -15,6 +15,8 @@ One entry per kept change beyond the Phase 2 baseline. Format:
 
 6 | TEST DEPTH / RELIABILITY | Injectable `watchdogOverride` on `StoryController` + a test that directly asserts the watchdog reveals the quiz when a completion event never fires. | **KEPT** — closes the R2 coverage gap (previously asserted only indirectly); deterministic, 0 analyze issues.
 
+7 | RELIABILITY / RESILIENCE | `FallbackNarrator`: wraps ElevenLabs (primary) → native TTS (fallback); on a primary error it transparently re-speaks on the fallback so the child never sees the failure. Wired in `main.dart` when a key is present. | **KEPT** — real graceful-degradation for the remote path; +3 fault-injection tests (success passthrough, single-fail fallback, both-fail error). 54 tests total, 0 analyze issues.
+
 ## Dimension coverage so far
 CORRECTNESS ✅, PERFORMANCE ✅ (fonts, RepaintBoundary, capped particles, reduced-motion),
 RELIABILITY ✅, ERROR-HANDLING ✅ (narration + quiz load), OBSERVABILITY ✅ (no silent catch),

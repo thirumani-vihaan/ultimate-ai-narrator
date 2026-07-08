@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'haptics/haptics.dart';
 import 'narration/elevenlabs_narrator.dart';
+import 'narration/fallback_narrator.dart';
 import 'narration/flutter_tts_narrator.dart';
 import 'narration/narrator.dart';
 import 'quiz/asset_quiz_repository.dart';
@@ -26,8 +27,13 @@ const String kQuizAssetPath = 'assets/quiz/quiz.json';
 List<Override> buildRealOverrides() {
   return <Override>[
     narratorProvider.overrideWith((ref) {
+      // Remote ElevenLabs (when a key is set) with automatic fallback to the
+      // credential-free native engine if it errors; otherwise native only.
       final Narrator narrator = _elevenLabsKey.isNotEmpty
-          ? ElevenLabsNarrator(apiKey: _elevenLabsKey)
+          ? FallbackNarrator(
+              ElevenLabsNarrator(apiKey: _elevenLabsKey),
+              FlutterTtsNarrator(),
+            )
           : FlutterTtsNarrator();
       ref.onDispose(narrator.dispose);
       return narrator;
