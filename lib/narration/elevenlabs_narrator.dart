@@ -28,6 +28,7 @@ class TtsApiException implements Exception {
 abstract interface class AudioSink {
   Future<void> play(Uint8List mp3);
   Future<void> stop();
+  Future<void> dispose();
 }
 
 /// Default sink when no real player plugin is wired. It does not emit sound; it
@@ -45,6 +46,9 @@ class SilentAudioSink implements AudioSink {
 
   @override
   Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 /// Real ElevenLabs text-to-speech client. Injectable [http.Client] so tests
@@ -165,7 +169,7 @@ class ElevenLabsNarrator implements Narrator {
   @override
   void dispose() {
     _disposed = true;
-    unawaited(_sink.stop());
+    unawaited(_sink.dispose());
     unawaited(_controller.close());
   }
 }

@@ -6,6 +6,7 @@ import 'haptics/haptics.dart';
 import 'narration/elevenlabs_narrator.dart';
 import 'narration/fallback_narrator.dart';
 import 'narration/flutter_tts_narrator.dart';
+import 'narration/just_audio_sink.dart';
 import 'narration/narrator.dart';
 import 'quiz/asset_quiz_repository.dart';
 import 'quiz/http_quiz_repository.dart';
@@ -31,7 +32,10 @@ List<Override> buildRealOverrides() {
       // credential-free native engine if it errors; otherwise native only.
       final Narrator narrator = _elevenLabsKey.isNotEmpty
           ? FallbackNarrator(
-              ElevenLabsNarrator(apiKey: _elevenLabsKey),
+              ElevenLabsNarrator(
+                apiKey: _elevenLabsKey,
+                sink: JustAudioSink(),
+              ),
               FlutterTtsNarrator(),
             )
           : FlutterTtsNarrator();

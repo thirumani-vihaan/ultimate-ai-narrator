@@ -15,6 +15,9 @@ class _RecordingSink implements AudioSink {
 
   @override
   Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 void main() {

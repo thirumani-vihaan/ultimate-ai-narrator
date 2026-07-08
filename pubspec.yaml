@@ -46,6 +46,8 @@ dependencies:
   http: ^1.2.2
   # sha1 hashing for the remote-audio cache key.
   crypto: ^3.0.5
+  # Audible playback of remote (ElevenLabs) mp3 bytes.
+  just_audio: ^0.9.42
 
 dev_dependencies:
   flutter_test:
