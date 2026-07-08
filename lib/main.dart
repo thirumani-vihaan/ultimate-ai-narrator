@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'audio/sound_effects.dart';
 import 'haptics/haptics.dart';
 import 'narration/elevenlabs_narrator.dart';
 import 'narration/fallback_narrator.dart';
@@ -49,6 +50,11 @@ List<Override> buildRealOverrides() {
       return repository;
     }),
     hapticsProvider.overrideWith((ref) => const RealHaptics()),
+    soundEffectsProvider.overrideWith((ref) {
+      final sfx = JustAudioSoundEffects();
+      ref.onDispose(sfx.dispose);
+      return sfx;
+    }),
   ];
 }
 

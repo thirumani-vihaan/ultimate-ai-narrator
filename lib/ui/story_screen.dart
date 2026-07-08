@@ -25,8 +25,19 @@ class StoryScreen extends ConsumerWidget {
     final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     // Bridge: when the quiz becomes solved, tell the story controller to
-    // enter its celebratory Success phase (single, testable coupling point).
+    // enter its celebratory Success phase; also fire feedback sound effects
+    // (unless muted). Single, testable coupling point.
     ref.listen<QuizState>(quizControllerProvider, (previous, next) {
+      if (!ref.read(muteProvider)) {
+        final sfx = ref.read(soundEffectsProvider);
+        if (next.status == QuizStatus.solved &&
+            (previous == null || previous.status != QuizStatus.solved)) {
+          sfx.correct();
+        } else if (next.status == QuizStatus.wrong &&
+            next.shakeToken != (previous?.shakeToken ?? 0)) {
+          sfx.wrong();
+        }
+      }
       if (next.isSolved && (previous == null || !previous.isSolved)) {
         story.markSolved();
       }
@@ -87,6 +98,12 @@ class StoryScreen extends ConsumerWidget {
               active: phase is PhaseSuccess && !reduceMotion,
             ),
           ),
+          // Mute toggle, top-right.
+          const Positioned(
+            top: 4,
+            right: 4,
+            child: SafeArea(child: _MuteButton()),
+          ),
           // Screen-reader live announcements (its own widget so it doesn't
           // rebuild the whole screen on quiz changes).
           const _LiveAnnouncer(),
@@ -122,6 +139,25 @@ class _LiveAnnouncer extends ConsumerWidget {
       PhaseSuccess() => 'Correct! Well done.',
       PhaseError(:final String message) => message,
     };
+  }
+}
+
+/// Toggles UI sound effects on/off.
+class _MuteButton extends ConsumerWidget {
+  const _MuteButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final muted = ref.watch(muteProvider);
+    return IconButton(
+      tooltip: muted ? 'Turn sounds on' : 'Turn sounds off',
+      onPressed: () => ref.read(muteProvider.notifier).state = !muted,
+      icon: Icon(
+        muted ? Icons.music_off_rounded : Icons.music_note_rounded,
+        color: PebloColors.primary,
+        size: 28,
+      ),
+    );
   }
 }
 

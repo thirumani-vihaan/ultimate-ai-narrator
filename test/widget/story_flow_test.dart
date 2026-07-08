@@ -30,6 +30,7 @@ void main() {
       answer: 'Blue',
     );
 
+    final sfx = FakeSoundEffects();
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[
@@ -43,6 +44,7 @@ void main() {
             (ref) => FakeQuizRepository(<Question>[question]),
           ),
           hapticsProvider.overrideWith((ref) => FakeHaptics()),
+          soundEffectsProvider.overrideWith((ref) => sfx),
         ],
         child: const UltimateAiNarratorApp(),
       ),
@@ -69,6 +71,7 @@ void main() {
     await tester.tap(find.text('Red'));
     await tester.pump();
     expect(find.textContaining('Not quite'), findsOneWidget);
+    expect(sfx.calls, contains('wrong'));
 
     // Correct answer → success celebration.
     await tester.ensureVisible(find.text('Blue'));
@@ -77,5 +80,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.textContaining('You did it'), findsOneWidget);
+    expect(sfx.calls, contains('correct'));
   });
 }

@@ -74,6 +74,8 @@ flutter:
   # Default quiz data, loaded by AssetQuizRepository "as if served by our backend".
   assets:
     - assets/quiz/quiz.json
+    - assets/sfx/correct.wav
+    - assets/sfx/wrong.wav
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

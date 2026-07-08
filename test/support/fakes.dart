@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ultimate_ai_narrator/audio/sound_effects.dart';
 import 'package:ultimate_ai_narrator/narration/narrator.dart';
 import 'package:ultimate_ai_narrator/quiz/quiz_models.dart';
 import 'package:ultimate_ai_narrator/quiz/quiz_repository.dart';
@@ -46,6 +47,20 @@ class FailingQuizRepository implements QuizRepository {
   @override
   Future<List<Question>> loadQuestions() async =>
       throw const QuizLoadException('boom');
+}
+
+/// Records sound-effect calls for assertions.
+class FakeSoundEffects implements SoundEffects {
+  final List<String> calls = <String>[];
+
+  @override
+  Future<void> correct() async => calls.add('correct');
+
+  @override
+  Future<void> wrong() async => calls.add('wrong');
+
+  @override
+  Future<void> dispose() async {}
 }
 
 /// A convenient sample question with a configurable option count.

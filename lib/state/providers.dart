@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../audio/sound_effects.dart';
 import '../haptics/haptics.dart';
 import '../narration/narrator.dart';
 import '../quiz/quiz_repository.dart';
@@ -29,6 +30,14 @@ final Provider<Haptics> hapticsProvider = Provider<Haptics>((ref) {
     'hapticsProvider must be overridden (see main.dart / tests).',
   );
 });
+
+/// Whether UI sound effects are muted. Defaults to on (not muted).
+final StateProvider<bool> muteProvider = StateProvider<bool>((ref) => false);
+
+/// UI sound effects. Defaults to silent so tests need no override; `main.dart`
+/// overrides it with the real just_audio implementation.
+final Provider<SoundEffects> soundEffectsProvider =
+    Provider<SoundEffects>((ref) => const NoopSoundEffects());
 
 /// Orchestrates narration → quiz-reveal phases.
 final StateNotifierProvider<StoryController, StoryPhase> storyControllerProvider =
