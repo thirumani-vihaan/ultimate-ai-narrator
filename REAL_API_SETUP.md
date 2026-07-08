@@ -4,22 +4,38 @@ Everything works with **zero credentials and zero devices** by default (native/b
 + bundled quiz asset + fixtures for tests). Enabling the real/optional integrations is
 **configuration only — no code changes**.
 
-## 1. ElevenLabs remote TTS (bonus, optional)
-Higher-quality narration. Default is the credential-free native/browser TTS.
+## 1. ElevenLabs premium narration (the flagship voice)
+The story is read aloud in a warm, natural **ElevenLabs** voice. The credential-free
+native/browser TTS is the automatic fallback, so the app always talks even without a key.
 
-- **Env var:** `ELEVENLABS_API_KEY`
-- **Where to get it:** create a free account at <https://elevenlabs.io> → Profile → API Key.
-- **How to pass it** (compile-time define, works on every platform incl. web):
+- **Env vars:** `ELEVENLABS_API_KEY` (required) and `ELEVENLABS_MODEL` (optional; defaults
+  to **`eleven_flash_v2_5`** — the "Flash" model, ~half the credits per character and low
+  latency).
+- **Where to get it:** create an account at <https://elevenlabs.io> → Profile → API Keys.
+  **The key must have the `text_to_speech` permission** (a key without it returns `401` and
+  the app silently falls back to the built-in voice).
+- **How to pass it** (compile-time defines, work on every platform incl. web). The tidy way
+  is a git-ignored `keys.json` (copy `keys.example.json`):
+  ```jsonc
+  // keys.json  (git-ignored)
+  { "ELEVENLABS_API_KEY": "sk_..." }
+  ```
   ```bash
-  flutter run   -d chrome --dart-define=ELEVENLABS_API_KEY=xxxxxxxx
-  flutter build web        --dart-define=ELEVENLABS_API_KEY=xxxxxxxx
+  flutter run   -d chrome --dart-define-from-file=keys.json
+  flutter build web        --dart-define-from-file=keys.json
+  # …or inline:
+  flutter run   -d chrome --dart-define=ELEVENLABS_API_KEY=sk_...
   ```
 - **Effect:** `buildRealOverrides()` in `lib/main.dart` selects `ElevenLabsNarrator`
-  (wrapped in `FallbackNarrator` → native TTS if it errors). Audio is fetched, **cached** by
-  `sha1(text+voice)` so repeats don't re-hit the quota, and **played aloud via `just_audio`**
-  (`JustAudioSink`, works on web + mobile). Errors (429/network) degrade to native TTS, then
-  to a friendly retry — never a crash.
-- **Voice:** override `voiceId` in `ElevenLabsClient` if desired (defaults to a standard voice).
+  (wrapped in `FallbackNarrator` → built-in TTS if it errors). Audio is fetched, **cached**
+  by `sha1(text+voice)` so repeats don't re-hit the quota, and **played aloud** on web via a
+  **base64 data-URI** into `just_audio` (`JustAudioSink`; byte-streaming is flaky on
+  `just_audio_web`). Errors (401/429/network) degrade to the built-in voice, then to a
+  friendly retry — never a crash.
+- **Live attribution in-app:** the UI shows the active voice ("Voice: ElevenLabs · Flash"
+  vs "Built-in voice") and a **"Powered by ElevenLabs"** credit while ElevenLabs is playing.
+- **Voice:** override `voiceId` in `ElevenLabsClient` to pick a different ElevenLabs voice
+  (defaults to a standard narrator voice).
 
 > Note: browsers gate audio autoplay behind a user gesture; the flow is tap-initiated
 > ("Read Me a Story"), so playback is permitted. On Android/iOS there is no such gate.

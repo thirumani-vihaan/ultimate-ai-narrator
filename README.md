@@ -28,6 +28,32 @@ mid-range (~3 GB RAM) Android devices treated as a hard constraint.
 
 ---
 
+## 🔊 Premium narration — powered by [ElevenLabs](https://elevenlabs.io)
+
+The story isn't just shown on screen — it's **spoken in a warm, natural voice** by
+**ElevenLabs** premium text-to-speech, the app's flagship "wow" moment:
+
+- **Real ElevenLabs TTS**, on the **`eleven_flash_v2_5` ("Flash")** model — near-realtime
+  latency and ~**half the credits** per character, so a 10K-credit budget stretches far.
+- **Zero-cost repeats.** Every clip is cached by **`sha1(text + voice)`**, so replaying a
+  story (or re-reading the same words) never spends another credit or re-hits the API.
+- **Web-reliable playback.** Audio plays through a **base64 data-URI** into `just_audio`,
+  which is robust across browsers (raw byte-streaming is flaky on `just_audio_web`).
+- **Never breaks the experience.** A `FallbackNarrator` **auto-degrades to the device's
+  built-in voice** on any error (missing/invalid key, 401, 429, offline) — the story is
+  *always* read aloud.
+- **Honest, live attribution.** The UI shows **which voice is actually speaking**
+  ("Voice: ElevenLabs · Flash" vs "Built-in voice"), and a **"Powered by ElevenLabs"**
+  credit appears **only while ElevenLabs is the active voice**.
+- **Key-gated & mock-first.** With no key it uses free native/browser TTS; drop a key in
+  `keys.json` and the premium voice lights up — *no code change*.
+
+> **Enable it:** put your key in `keys.json` (git-ignored) and run with
+> `--dart-define-from-file=keys.json`. The key must have the **`text_to_speech`**
+> permission. Full steps in [`REAL_API_SETUP.md`](REAL_API_SETUP.md).
+
+---
+
 ## ✨ What it does
 
 | Stage | Behaviour |
@@ -51,8 +77,10 @@ mid-range (~3 GB RAM) Android devices treated as a hard constraint.
 - **Sound effects + mute** — gentle bundled chimes on correct/wrong, with a mute toggle
   that **persists across launches** (`shared_preferences`).
 - **Stop control** — a child can stop the story mid-read.
-- **Resilient remote TTS** — ElevenLabs auto-falls-back to native TTS on error, and its
-  audio actually plays via `just_audio` (cached by content hash).
+- **Premium ElevenLabs narration** *(see the dedicated section above)* — real ElevenLabs
+  TTS on the Flash model, cached by content hash so repeats are free, with a **live
+  "Voice: ElevenLabs · Flash" indicator** and a **"Powered by ElevenLabs"** credit; it
+  auto-falls-back to the built-in device voice on any error.
 - **Delightful, cheap visuals** — animated sky + drifting clouds, a talking-mouth buddy,
   staggered option-tile entrances — all `RepaintBoundary`-isolated and reduced-motion aware.
 - **Accessibility** — screen-reader live announcements per phase, reduced-motion support,
@@ -73,7 +101,7 @@ lib/
   state/                       # StoryController (phase machine), QuizController, providers
   ui/                          # StoryScreen + widgets (buddy, quiz panel, confetti, …)
 assets/quiz/quiz.json          # default quiz "as if served by the backend"
-test/                          # 49 offline tests (no devices, no credentials)
+test/                          # 68 offline tests (no devices, no credentials)
 *.md                           # architecture, interfaces, plan, risk log, metrics, reports (repo root)
 ```
 
@@ -91,7 +119,9 @@ flutter pub get
 # Web demo (real browser TTS, no key needed):
 flutter run -d chrome
 
-# Optional bonus: high-quality ElevenLabs narration
+# Premium ElevenLabs narration (recommended) — put your key in keys.json (git-ignored):
+flutter run -d chrome --dart-define-from-file=keys.json
+# …or pass it inline (uses the eleven_flash_v2_5 "Flash" model by default):
 flutter run -d chrome --dart-define=ELEVENLABS_API_KEY=xxxxxxxx
 
 # Optional: fetch the quiz from a real backend instead of the bundled asset
@@ -101,7 +131,7 @@ flutter run -d chrome --dart-define=QUIZ_ENDPOINT=https://your.api/quiz
 ### Tests & static analysis (fully offline, zero credentials)
 ```bash
 flutter analyze        # 0 issues (strict lints)
-flutter test           # 61 tests pass
+flutter test           # 68 tests pass
 ```
 
 ---
@@ -203,6 +233,7 @@ Success) → **Next question** through the 3/4/5-option sequence.
 
 ## 🧪 Tech
 
-Flutter 3.44 · Dart 3.12 · Riverpod · `flutter_tts` · `just_audio` · `confetti` · `http` ·
-`crypto` · `shared_preferences`. **68 tests**, `flutter analyze` clean. No credentials or
-devices required to build, analyse, or test.
+Flutter 3.44 · Dart 3.12 · Riverpod · **ElevenLabs** (premium TTS) · `flutter_tts` (native
+TTS fallback) · `just_audio` · `confetti` · `http` · `crypto` · `shared_preferences`.
+**68 tests**, `flutter analyze` clean. No credentials or devices required to build,
+analyse, or test.
