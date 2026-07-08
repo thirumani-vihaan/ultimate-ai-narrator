@@ -170,12 +170,14 @@ class _ListeningHint extends StatelessWidget {
         children: <Widget>[
           Text('🔊', style: TextStyle(fontSize: 24)),
           SizedBox(width: 12),
-          Text(
-            'Shhh… Pip is reading!',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: PebloColors.primaryDark,
+          Flexible(
+            child: Text(
+              'Shhh… Pip is reading!',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: PebloColors.primaryDark,
+              ),
             ),
           ),
         ],
@@ -233,12 +235,14 @@ class _RevealPlaceholder extends StatelessWidget {
         children: <Widget>[
           Text('✨', style: TextStyle(fontSize: 24)),
           SizedBox(width: 12),
-          Text(
-            'Here comes a question!',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: PebloColors.primaryDark,
+          Flexible(
+            child: Text(
+              'Here comes a question!',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: PebloColors.primaryDark,
+              ),
             ),
           ),
         ],
@@ -271,12 +275,15 @@ class _SuccessBanner extends StatelessWidget {
         children: <Widget>[
           Text('🎉', style: TextStyle(fontSize: 26)),
           SizedBox(width: 10),
-          Text(
-            'You did it! Great job!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
+          Flexible(
+            child: Text(
+              'You did it! Great job!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
             ),
           ),
           SizedBox(width: 10),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../narration/narrator.dart';
@@ -34,9 +35,12 @@ class StoryController extends StateNotifier<StoryPhase> {
   Timer? _revealTimer;
   Timer? _watchdogTimer;
 
+  /// Current phase — exposed for tests only (production reads via the provider).
+  @visibleForTesting
+  StoryPhase get currentPhase => state;
+
   /// Intent: begin (or restart) narration.
-  void readStory() {
-    if (state is PhasePreparing || state is PhaseNarrating) return;
+  void readStory() {    if (state is PhasePreparing || state is PhaseNarrating) return;
     _cancelTimers();
     state = const PhasePreparing();
     _narrator.speak(storyText);

@@ -17,4 +17,4 @@ Append-only. Each risk: description → mitigation. Deviations discovered during
 | R11 | **Overbuilding past the hard budget** in pursuit of "10 steps beyond." | MED | Every delight feature is a Phase-3 ROI candidate measured against the perf budget; any regression to frame/memory budget → reverted (guardrail §3.4). |
 
 ## Spike results (filled during Phase 2)
-- **T1 (flutter_tts completion/web):** _pending_
+- **T1 (flutter_tts completion/web):** Handled by design rather than a live spike — `flutter_tts` is a platform-channel plugin unavailable under `flutter test`, so it sits behind the `Narrator` interface and is faked in tests; the real completion-callback path is exercised only in the running web app. The audio→quiz handoff risk (R2) is fully covered by the `StoryController` state machine: idempotent completion handling + a watchdog timer guarantee the quiz reveals even if a completion event is late/duplicated/missing (unit-tested in `story_controller_test.dart`).

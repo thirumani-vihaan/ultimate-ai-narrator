@@ -44,11 +44,11 @@ Real client (request/response/error/429 handling), cache by sha1(text). Key-gate
 
 ### T9 — WIRING (mandatory, §2.3)  · RISK: MED · deps: T3, T5, T6, T8
 Implement `buildRealOverrides()` in `main.dart`; grep-confirm each real factory is constructed there (outside its module + outside tests); add one reachability test per dependency booting via the real entry point asserting the real type was instantiated.
-- Deliverable + checklist (filled during Phase 2):
-  - [ ] `FlutterTtsNarrator` reachable from `main` — grep: ____ · test: ____
-  - [ ] `AssetQuizRepository` reachable from `main` — grep: ____ · test: ____
-  - [ ] `RealHaptics` reachable from `main` — grep: ____ · test: ____
-  - [ ] `ElevenLabsNarrator` selected when key present — grep: ____ · test: ____
+- Deliverable + checklist (Phase 2 — VERIFIED):
+  - [x] `FlutterTtsNarrator` reachable from `main` — grep: `main.dart` `: FlutterTtsNarrator();` · test: `wiring_test.dart` asserts `isA<FlutterTtsNarrator>()`
+  - [x] `AssetQuizRepository` reachable from `main` — grep: `main.dart` `: AssetQuizRepository(kQuizAssetPath);` · test: `wiring_test.dart` asserts `isA<AssetQuizRepository>()` + `assetPath == kQuizAssetPath`
+  - [x] `RealHaptics` reachable from `main` — grep: `main.dart` `hapticsProvider.overrideWith((ref) => const RealHaptics())` · test: `wiring_test.dart` asserts `isA<RealHaptics>()`
+  - [x] `ElevenLabsNarrator` selected when key present — grep: `main.dart` `? ElevenLabsNarrator(apiKey: _elevenLabsKey)` · test: `elevenlabs_narrator_test.dart` (real HTTP path via MockClient: cache hit/miss + 429)
 
 ### T10 — Offline test suite + analyze gate  · RISK: LOW · deps: T2–T9
 Full `flutter test` green with **zero credentials/devices**; `flutter analyze` clean. Data-driven proof test (3/4/5) included.

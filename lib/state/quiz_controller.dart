@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/logging.dart';
@@ -12,6 +13,10 @@ class QuizController extends StateNotifier<QuizState> {
 
   final QuizRepository _repo;
   final Haptics _haptics;
+
+  /// Current state — exposed for tests only (production reads via the provider).
+  @visibleForTesting
+  QuizState get currentState => state;
 
   /// Loads questions from the (injected) repository. On any failure it degrades
   /// to a friendly error state instead of throwing across the boundary.
