@@ -57,6 +57,15 @@ class StoryController extends StateNotifier<StoryPhase> {
     if (state is PhaseError) readStory();
   }
 
+  /// Intent: stop the narration and return to idle (child taps "Stop").
+  void stopReading() {
+    if (state is PhaseNarrating || state is PhasePreparing) {
+      _cancelTimers();
+      _narrator.stop();
+      state = const PhaseIdle();
+    }
+  }
+
   /// Called when the quiz has been solved, to enter the celebratory state.
   void markSolved() {
     if (state is PhaseQuiz) state = const PhaseSuccess();

@@ -181,7 +181,10 @@ class _BottomArea extends ConsumerWidget {
             busy: true,
             onPressed: null,
           ),
-        PhaseNarrating() => const _ListeningHint(key: ValueKey<String>('hint')),
+        PhaseNarrating() => _NarratingControls(
+            key: const ValueKey<String>('hint'),
+            onStop: story.stopReading,
+          ),
         PhaseError(:final message) => ErrorRetry(
             key: const ValueKey<String>('error'),
             message: message,
@@ -197,7 +200,7 @@ class _BottomArea extends ConsumerWidget {
 }
 
 class _ListeningHint extends StatelessWidget {
-  const _ListeningHint({super.key});
+  const _ListeningHint();
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +227,42 @@ class _ListeningHint extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Narration status hint plus a child-friendly "Stop" control.
+class _NarratingControls extends StatelessWidget {
+  const _NarratingControls({super.key, required this.onStop});
+
+  final VoidCallback onStop;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        const _ListeningHint(),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: onStop,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: PebloColors.primaryDark,
+              side: const BorderSide(color: PebloColors.primary, width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            icon: const Icon(Icons.stop_rounded),
+            label: const Text('Stop'),
+          ),
+        ),
+      ],
     );
   }
 }

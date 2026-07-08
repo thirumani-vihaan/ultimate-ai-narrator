@@ -92,6 +92,18 @@ void main() {
     expect(controller.currentPhase, isA<PhaseSuccess>());
   });
 
+  test('stopReading from narrating returns to idle and stops the narrator',
+      () async {
+    controller.readStory();
+    narrator.emit(const NarrationSpeaking());
+    await tick();
+    expect(controller.currentPhase, isA<PhaseNarrating>());
+
+    controller.stopReading();
+    expect(controller.currentPhase, isA<PhaseIdle>());
+    expect(narrator.stopCalls, 1);
+  });
+
   test('watchdog reveals the quiz even if completion never fires', () async {
     // A dedicated controller with a tiny watchdog window.
     final n = ManualNarrator();
