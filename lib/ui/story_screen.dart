@@ -60,9 +60,11 @@ class StoryScreen extends ConsumerWidget {
                         const _Header(),
                         const SizedBox(height: 4),
                         Center(
-                          child: BuddyCharacter(
-                            mood: mood,
-                            reduceMotion: reduceMotion,
+                          child: ExcludeSemantics(
+                            child: BuddyCharacter(
+                              mood: mood,
+                              reduceMotion: reduceMotion,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -85,9 +87,41 @@ class StoryScreen extends ConsumerWidget {
               active: phase is PhaseSuccess && !reduceMotion,
             ),
           ),
+          // Screen-reader live announcements (its own widget so it doesn't
+          // rebuild the whole screen on quiz changes).
+          const _LiveAnnouncer(),
         ],
       ),
     );
+  }
+}
+
+/// Announces the current phase to assistive technologies via a live region.
+class _LiveAnnouncer extends ConsumerWidget {
+  const _LiveAnnouncer();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final phase = ref.watch(storyControllerProvider);
+    final quiz = ref.watch(quizControllerProvider);
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: _announcementFor(phase, quiz),
+      child: const SizedBox.shrink(),
+    );
+  }
+
+  static String _announcementFor(StoryPhase phase, QuizState quiz) {
+    return switch (phase) {
+      PhaseIdle() => 'Ready. Tap Read Me a Story to begin.',
+      PhasePreparing() => 'Getting the story ready.',
+      PhaseNarrating() => 'The story is playing.',
+      PhaseRevealing() => 'Here comes a question.',
+      PhaseQuiz() => 'Question ${quiz.index + 1} of ${quiz.total}.',
+      PhaseSuccess() => 'Correct! Well done.',
+      PhaseError(:final String message) => message,
+    };
   }
 }
 

@@ -17,6 +17,8 @@ One entry per kept change beyond the Phase 2 baseline. Format:
 
 7 | RELIABILITY / RESILIENCE | `FallbackNarrator`: wraps ElevenLabs (primary) → native TTS (fallback); on a primary error it transparently re-speaks on the fallback so the child never sees the failure. Wired in `main.dart` when a key is present. | **KEPT** — real graceful-degradation for the remote path; +3 fault-injection tests (success passthrough, single-fail fallback, both-fail error). 54 tests total, 0 analyze issues.
 
+8 | UX / ACCESSIBILITY | `liveRegion` `Semantics` announcer speaks each phase to screen readers ("The story is playing", "Question 1 of 3", "Correct!"); decorative buddy wrapped in `ExcludeSemantics`. Isolated widget so it doesn't rebuild the screen. | **KEPT** — meaningful a11y for a child app; +1 semantics test. 55 tests total, 0 analyze issues.
+
 ## Dimension coverage so far
 CORRECTNESS ✅, PERFORMANCE ✅ (fonts, RepaintBoundary, capped particles, reduced-motion),
 RELIABILITY ✅, ERROR-HANDLING ✅ (narration + quiz load), OBSERVABILITY ✅ (no silent catch),
