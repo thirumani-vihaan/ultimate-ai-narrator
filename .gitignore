@@ -1,0 +1,45 @@
+# Keep Peblo's challenge brief local-only (do not publish to public repo)
+project challenge.pdf
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+linked_*.ds
+unlinked.ds
+unlinked_spec.ds
+*.iml
+.idea/
+.vscode/
+doc/api/
+coverage/
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.keystore
+*.jks
+
+# iOS / macOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+**/DerivedData/
+*.xcuserstate
+
+# OS
+.DS_Store
+Thumbs.db
