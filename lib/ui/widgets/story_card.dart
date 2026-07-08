@@ -51,28 +51,53 @@ class StoryCard extends ConsumerWidget {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
-        color: PebloColors.cloud,
-        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: <Color>[Colors.white, Color(0xFFFFFDF8)],
+        ),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: highlighted ? PebloColors.accent : Colors.transparent,
-          width: 3,
+          color: highlighted
+              ? PebloColors.accent
+              : PebloColors.primary.withValues(alpha: 0.06),
+          width: highlighted ? 2.5 : 1.5,
         ),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: PebloColors.primary.withValues(alpha: 0.12),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: PebloColors.primary.withValues(alpha: 0.14),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Text('📖', style: TextStyle(fontSize: 26)),
-          const SizedBox(width: 12),
-          Expanded(child: body),
+          Row(
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: PebloColors.accent.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  '📖 Storytime',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF9A6A00),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          body,
         ],
       ),
     );

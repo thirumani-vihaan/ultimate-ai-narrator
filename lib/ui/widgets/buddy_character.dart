@@ -73,12 +73,15 @@ class _BuddyCharacterState extends State<BuddyCharacter>
           final mouthOpen = (talking && !widget.reduceMotion)
               ? (0.5 - 0.5 * math.cos(_controller.value * 4 * math.pi))
               : 0.0;
+          // Brief blink near the end of each loop.
+          final blink = !widget.reduceMotion && _controller.value > 0.93;
           return CustomPaint(
             size: Size.square(widget.size),
             painter: _PipPainter(
               mood: widget.mood,
               mouthOpen: mouthOpen,
               bob: bob,
+              blink: blink,
             ),
           );
         },
@@ -92,11 +95,13 @@ class _PipPainter extends CustomPainter {
     required this.mood,
     this.mouthOpen = 0.0,
     this.bob = 0.0,
+    this.blink = false,
   });
 
   final BuddyMood mood;
   final double mouthOpen;
   final double bob;
+  final bool blink;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -232,6 +237,24 @@ class _PipPainter extends CustomPainter {
           false,
           eye,
         );
+    } else if (blink) {
+      // Closed eyes — two short horizontal lines.
+      final lid = Paint()
+        ..color = PebloColors.ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.03
+        ..strokeCap = StrokeCap.round;
+      canvas
+        ..drawLine(
+          Offset(w * 0.33, eyeY),
+          Offset(w * 0.43, eyeY),
+          lid,
+        )
+        ..drawLine(
+          Offset(w * 0.57, eyeY),
+          Offset(w * 0.67, eyeY),
+          lid,
+        );
     } else {
       fill.color = PebloColors.ink;
       canvas
@@ -299,5 +322,6 @@ class _PipPainter extends CustomPainter {
   bool shouldRepaint(_PipPainter oldDelegate) =>
       oldDelegate.mood != mood ||
       oldDelegate.mouthOpen != mouthOpen ||
-      oldDelegate.bob != bob;
+      oldDelegate.bob != bob ||
+      oldDelegate.blink != blink;
 }

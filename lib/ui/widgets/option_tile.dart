@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/peblo_theme.dart';
+import 'pressable.dart';
 
 /// Visual state of a single answer tile.
 enum OptionVisual { normal, wrong, correct, dimmed }
 
-/// One tappable answer. Big, high-contrast, with a playful leading emoji and a
-/// large tap target (min 60dp) suited to small fingers.
+/// One tappable answer — a soft, elevated card with a colourful lettered badge
+/// (A, B, C…), a press-squish, and clear correct/wrong states. The lettered
+/// badge is content-agnostic (works for any story) and reads as "designed"
+/// rather than a bare list item.
 class OptionTile extends StatelessWidget {
   const OptionTile({
     super.key,
@@ -21,66 +24,121 @@ class OptionTile extends StatelessWidget {
   final OptionVisual visual;
   final VoidCallback? onTap;
 
-  static const List<String> _emojis = <String>[
-    '🍎',
-    '🌿',
-    '💧',
-    '⭐',
-    '🌸',
-    '🚀',
-    '🎈',
-    '🐣',
+  static const List<Color> _badgeColors = <Color>[
+    PebloColors.primary,
+    PebloColors.sky,
+    PebloColors.mint,
+    PebloColors.coral,
+    PebloColors.accent,
+    PebloColors.bubble,
   ];
 
   @override
   Widget build(BuildContext context) {
-    final ({Color bg, Color fg}) colors = switch (visual) {
-      OptionVisual.correct => (bg: PebloColors.mint, fg: Colors.white),
-      OptionVisual.wrong => (bg: PebloColors.coral, fg: Colors.white),
-      OptionVisual.dimmed => (
-          bg: PebloColors.cloud,
-          fg: PebloColors.ink.withValues(alpha: 0.4),
-        ),
-      OptionVisual.normal => (bg: PebloColors.cloud, fg: PebloColors.ink),
+    final letter = String.fromCharCode(65 + (index % 26));
+    final badgeColor = _badgeColors[index % _badgeColors.length];
+
+    final bool solid = visual == OptionVisual.correct || visual == OptionVisual.wrong;
+    final Color surface = switch (visual) {
+      OptionVisual.correct => PebloColors.mint,
+      OptionVisual.wrong => PebloColors.coral,
+      OptionVisual.dimmed => PebloColors.cloud,
+      OptionVisual.normal => PebloColors.cloud,
+    };
+    final Color textColor = switch (visual) {
+      OptionVisual.correct || OptionVisual.wrong => Colors.white,
+      OptionVisual.dimmed => PebloColors.ink.withValues(alpha: 0.35),
+      OptionVisual.normal => PebloColors.ink,
     };
 
-    return Semantics(
-      button: true,
-      label: label,
-      child: Material(
-        color: colors.bg,
-        borderRadius: BorderRadius.circular(20),
-        elevation: visual == OptionVisual.normal ? 3 : 1,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 60),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            child: Row(
-              children: <Widget>[
-                Text(
-                  _emojis[index % _emojis.length],
-                  style: const TextStyle(fontSize: 24),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: colors.fg,
-                    ),
+    return Pressable(
+      onTap: onTap,
+      child: Semantics(
+        button: true,
+        label: label,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          constraints: const BoxConstraints(minHeight: 64),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(22),
+            gradient: solid
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: <Color>[
+                      Colors.white,
+                      Color(0xFFF6F2FF),
+                    ],
+                  ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: (solid ? surface : PebloColors.primary)
+                    .withValues(alpha: visual == OptionVisual.dimmed ? 0.06 : 0.22),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: <Widget>[
+              _Badge(
+                letter: letter,
+                color: visual == OptionVisual.dimmed
+                    ? PebloColors.ink.withValues(alpha: 0.18)
+                    : (solid ? Colors.white : badgeColor),
+                textColor: solid ? surface : Colors.white,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
                 ),
-                if (visual == OptionVisual.correct)
-                  const Icon(Icons.check_circle_rounded, color: Colors.white),
-                if (visual == OptionVisual.wrong)
-                  const Icon(Icons.close_rounded, color: Colors.white),
-              ],
-            ),
+              ),
+              if (visual == OptionVisual.correct)
+                const Icon(Icons.check_circle_rounded, color: Colors.white)
+              else if (visual == OptionVisual.wrong)
+                const Icon(Icons.cancel_rounded, color: Colors.white),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({
+    required this.letter,
+    required this.color,
+    required this.textColor,
+  });
+
+  final String letter;
+  final Color color;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      child: Text(
+        letter,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: textColor,
         ),
       ),
     );
