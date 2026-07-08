@@ -1,6 +1,9 @@
 # Keep Peblo's challenge brief local-only (do not publish to public repo)
 project challenge.pdf
 
+# Real API keys — never commit (use keys.example.json as a template)
+keys.json
+
 # Flutter / Dart
 .dart_tool/
 .flutter-plugins
