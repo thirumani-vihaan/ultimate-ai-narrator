@@ -10,47 +10,49 @@ void main() {
     );
     addTearDown(narrator.dispose);
 
-    final events = <NarrationState>[];
-    narrator.state.listen(events.add);
-
+    // Deterministic: assert the exact ordered stream, independent of wall clock.
+    final expectation = expectLater(
+      narrator.state,
+      emitsInOrder(<Matcher>[
+        isA<NarrationPreparing>(),
+        isA<NarrationSpeaking>(),
+        isA<NarrationCompleted>(),
+      ]),
+    );
     await narrator.speak('hi');
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-
-    expect(events.map((e) => e.runtimeType), <Type>[
-      NarrationPreparing,
-      NarrationSpeaking,
-      NarrationCompleted,
-    ]);
+    await expectation;
   });
 
-  test('emits preparing → error when forced', () async {
+  test('emits preparing → error (no speaking) when forced', () async {
     final narrator = FakeNarrator(
       prepareDelay: const Duration(milliseconds: 1),
       forceError: const NarrationError('nope'),
     );
     addTearDown(narrator.dispose);
 
-    final events = <NarrationState>[];
-    narrator.state.listen(events.add);
-
+    final expectation = expectLater(
+      narrator.state,
+      emitsInOrder(<Object>[
+        isA<NarrationPreparing>(),
+        predicate<NarrationState>(
+          (s) => s is NarrationError && s.message == 'nope',
+          'a NarrationError with message "nope"',
+        ),
+      ]),
+    );
     await narrator.speak('hi');
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-
-    expect(events.first, isA<NarrationPreparing>());
-    expect(events.last, isA<NarrationError>());
-    expect((events.last as NarrationError).message, 'nope');
-    expect(events.any((e) => e is NarrationSpeaking), isFalse);
+    await expectation;
   });
 
   test('stop emits idle', () async {
     final narrator = FakeNarrator();
     addTearDown(narrator.dispose);
-    final events = <NarrationState>[];
-    narrator.state.listen(events.add);
 
+    final expectation = expectLater(
+      narrator.state,
+      emits(isA<NarrationIdle>()),
+    );
     await narrator.stop();
-    await Future<void>.delayed(Duration.zero);
-
-    expect(events.single, isA<NarrationIdle>());
+    await expectation;
   });
 }

@@ -196,6 +196,7 @@ class _QuizArea extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final quiz = ref.watch(quizControllerProvider);
     final quizController = ref.read(quizControllerProvider.notifier);
+    final story = ref.read(storyControllerProvider.notifier);
     final revealing = phase is PhaseRevealing;
 
     if (quiz.status == QuizStatus.error) {
@@ -209,11 +210,33 @@ class _QuizArea extends ConsumerWidget {
       return const _RevealPlaceholder();
     }
 
+    final solved = phase is PhaseSuccess;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        if (phase is PhaseSuccess) const _SuccessBanner(),
+        if (solved) const _SuccessBanner(),
+        if (quiz.total > 1) ...<Widget>[
+          _QuizProgress(index: quiz.index, total: quiz.total),
+          const SizedBox(height: 10),
+        ],
         QuizPanel(state: quiz, onAnswer: quizController.answer),
+        if (solved) ...<Widget>[
+          const SizedBox(height: 16),
+          if (quiz.isLastQuestion)
+            _RestartButton(
+              onRestart: () {
+                quizController.reset();
+                story.readStory();
+              },
+            )
+          else
+            _NextButton(
+              onNext: () {
+                quizController.nextQuestion();
+                story.goToQuiz();
+              },
+            ),
+        ],
       ],
     );
   }
@@ -253,7 +276,6 @@ class _RevealPlaceholder extends StatelessWidget {
 
 class _SuccessBanner extends StatelessWidget {
   const _SuccessBanner();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -290,6 +312,120 @@ class _SuccessBanner extends StatelessWidget {
           Text('🎉', style: TextStyle(fontSize: 26)),
         ],
       ),
+    );
+  }
+}
+
+/// Row of dots showing progress through the question sequence.
+class _QuizProgress extends StatelessWidget {
+  const _QuizProgress({required this.index, required this.total});
+
+  final int index;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Text(
+          'Question ${index + 1} of $total',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: PebloColors.primaryDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            for (int i = 0; i < total; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: i == index ? 26 : 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: i < index
+                      ? PebloColors.mint
+                      : (i == index
+                          ? PebloColors.primary
+                          : PebloColors.primary.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NextButton extends StatelessWidget {
+  const _NextButton({required this.onNext});
+
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: onNext,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: PebloColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        icon: const Icon(Icons.arrow_forward_rounded),
+        label: const Text('Next question'),
+      ),
+    );
+  }
+}
+
+class _RestartButton extends StatelessWidget {
+  const _RestartButton({required this.onRestart});
+
+  final VoidCallback onRestart;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        const Text(
+          '🌟 You finished all the questions! 🌟',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: PebloColors.primaryDark,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 56,
+          child: ElevatedButton.icon(
+            onPressed: onRestart,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PebloColors.accent,
+              foregroundColor: PebloColors.ink,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            icon: const Icon(Icons.replay_rounded),
+            label: const Text('Read it again'),
+          ),
+        ),
+      ],
     );
   }
 }

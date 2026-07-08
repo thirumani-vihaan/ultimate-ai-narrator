@@ -56,6 +56,13 @@ class StoryController extends StateNotifier<StoryPhase> {
     if (state is PhaseQuiz) state = const PhaseSuccess();
   }
 
+  /// Return to the interactive quiz (e.g. after advancing to the next question).
+  void goToQuiz() {
+    if (state is PhaseSuccess || state is PhaseRevealing) {
+      state = const PhaseQuiz();
+    }
+  }
+
   void _onNarration(NarrationState event) {
     switch (event) {
       case NarrationPreparing():

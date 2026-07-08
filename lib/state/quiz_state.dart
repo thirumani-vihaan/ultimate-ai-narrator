@@ -48,6 +48,12 @@ class QuizState {
 
   bool get isSolved => status == QuizStatus.solved;
 
+  /// Total questions in the sequence.
+  int get total => questions.length;
+
+  /// Whether the current question is the last in the sequence.
+  bool get isLastQuestion => index >= questions.length - 1;
+
   QuizState copyWith({
     List<Question>? questions,
     int? index,

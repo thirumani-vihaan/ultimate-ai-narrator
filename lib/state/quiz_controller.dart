@@ -69,4 +69,14 @@ class QuizController extends StateNotifier<QuizState> {
       );
     }
   }
+
+  /// Restart the whole quiz from the first question.
+  void reset() {
+    if (state.questions.isEmpty) return;
+    state = QuizState(
+      questions: state.questions,
+      index: 0,
+      status: QuizStatus.ready,
+    );
+  }
 }

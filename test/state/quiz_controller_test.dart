@@ -82,4 +82,22 @@ void main() {
     expect(s.current!.options, hasLength(5));
     controller.dispose();
   });
+
+  test('reset returns to the first question', () async {
+    final controller = controllerWith(<Question>[
+      sampleQuestion(optionCount: 3),
+      sampleQuestion(optionCount: 5),
+    ]);
+    await controller.load();
+    controller.nextQuestion();
+    expect(controller.currentState.index, 1);
+    expect(controller.currentState.isLastQuestion, isTrue);
+
+    controller.reset();
+    expect(controller.currentState.index, 0);
+    expect(controller.currentState.status, QuizStatus.ready);
+    expect(controller.currentState.total, 2);
+    expect(controller.currentState.isLastQuestion, isFalse);
+    controller.dispose();
+  });
 }
