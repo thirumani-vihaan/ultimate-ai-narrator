@@ -49,3 +49,10 @@ abstract interface class Narrator {
   Future<void> stop();
   void dispose();
 }
+
+/// Optional capability: narrators that report how many characters have been
+/// spoken so far (0..text.length), enabling word-by-word highlighting. Not all
+/// engines support it (e.g. remote audio), so the UI probes for it with `is`.
+abstract interface class ProgressiveNarrator {
+  Stream<int> get spokenChars;
+}

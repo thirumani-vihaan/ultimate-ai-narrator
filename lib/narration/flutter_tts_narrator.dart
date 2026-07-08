@@ -12,7 +12,7 @@ import 'narrator.dart';
 /// The engine's start/completion/error callbacks are the only source of truth
 /// for state; they map 1:1 onto [NarrationState]. `speak` never throws — any
 /// failure is delivered as a [NarrationError] instead.
-class FlutterTtsNarrator implements Narrator {
+class FlutterTtsNarrator implements Narrator, ProgressiveNarrator {
   FlutterTtsNarrator({FlutterTts? tts}) : _tts = tts ?? FlutterTts() {
     unawaited(_configure());
   }
@@ -23,11 +23,15 @@ class FlutterTtsNarrator implements Narrator {
   final FlutterTts _tts;
   final StreamController<NarrationState> _controller =
       StreamController<NarrationState>.broadcast();
+  final StreamController<int> _progress = StreamController<int>.broadcast();
   bool _configured = false;
   bool _disposed = false;
 
   @override
   Stream<NarrationState> get state => _controller.stream;
+
+  @override
+  Stream<int> get spokenChars => _progress.stream;
 
   Future<void> _configure() async {
     try {
@@ -35,6 +39,9 @@ class FlutterTtsNarrator implements Narrator {
         ..setStartHandler(() => _emit(const NarrationSpeaking()))
         ..setCompletionHandler(() => _emit(const NarrationCompleted()))
         ..setCancelHandler(() => _emit(const NarrationIdle()))
+        ..setProgressHandler((String text, int start, int end, String word) {
+          if (!_disposed && !_progress.isClosed) _progress.add(end);
+        })
         ..setErrorHandler(
           (dynamic msg) => _emit(NarrationError(_friendlyError, cause: msg)),
         );
@@ -54,6 +61,7 @@ class FlutterTtsNarrator implements Narrator {
   @override
   Future<void> speak(String text) async {
     if (_disposed) return;
+    if (!_progress.isClosed) _progress.add(0);
     _emit(const NarrationPreparing());
     try {
       if (!_configured) await _configure();
@@ -78,5 +86,6 @@ class FlutterTtsNarrator implements Narrator {
     _disposed = true;
     unawaited(_tts.stop());
     unawaited(_controller.close());
+    unawaited(_progress.close());
   }
 }

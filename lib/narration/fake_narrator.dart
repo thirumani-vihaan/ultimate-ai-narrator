@@ -6,7 +6,7 @@ import 'narrator.dart';
 /// engine is available. Emits a realistic `preparing -> speaking -> completed`
 /// sequence (or a forced error) with no platform channel, so the whole suite
 /// runs on the Dart VM with zero devices or credentials.
-class FakeNarrator implements Narrator {
+class FakeNarrator implements Narrator, ProgressiveNarrator {
   FakeNarrator({
     this.prepareDelay = const Duration(milliseconds: 10),
     this.speakDelay = const Duration(milliseconds: 20),
@@ -25,12 +25,16 @@ class FakeNarrator implements Narrator {
 
   final StreamController<NarrationState> _controller =
       StreamController<NarrationState>.broadcast();
+  final StreamController<int> _progress = StreamController<int>.broadcast();
   Timer? _prepareTimer;
   Timer? _speakTimer;
   bool _disposed = false;
 
   @override
   Stream<NarrationState> get state => _controller.stream;
+
+  @override
+  Stream<int> get spokenChars => _progress.stream;
 
   @override
   Future<void> speak(String text) async {
@@ -45,8 +49,10 @@ class FakeNarrator implements Narrator {
         return;
       }
       _controller.add(const NarrationSpeaking());
+      if (!_progress.isClosed) _progress.add((text.length * 0.5).round());
       _speakTimer = Timer(speakDelay, () {
         if (_disposed) return;
+        if (!_progress.isClosed) _progress.add(text.length);
         _controller.add(const NarrationCompleted());
       });
     });
@@ -68,5 +74,6 @@ class FakeNarrator implements Narrator {
     _disposed = true;
     _cancelTimers();
     _controller.close();
+    _progress.close();
   }
 }

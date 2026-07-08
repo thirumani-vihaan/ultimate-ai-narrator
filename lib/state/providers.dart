@@ -34,6 +34,16 @@ final Provider<Haptics> hapticsProvider = Provider<Haptics>((ref) {
 /// Whether UI sound effects are muted. Defaults to on (not muted).
 final StateProvider<bool> muteProvider = StateProvider<bool>((ref) => false);
 
+/// Character-progress of the current narration (for word highlighting). Emits
+/// nothing if the active narrator doesn't report progress (e.g. remote audio).
+final StreamProvider<int> narrationProgressProvider = StreamProvider<int>((ref) {
+  final narrator = ref.watch(narratorProvider);
+  if (narrator is ProgressiveNarrator) {
+    return (narrator as ProgressiveNarrator).spokenChars;
+  }
+  return const Stream<int>.empty();
+});
+
 /// UI sound effects. Defaults to silent so tests need no override; `main.dart`
 /// overrides it with the real just_audio implementation.
 final Provider<SoundEffects> soundEffectsProvider =

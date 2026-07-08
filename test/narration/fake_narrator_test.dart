@@ -55,4 +55,16 @@ void main() {
     await narrator.stop();
     await expectation;
   });
+
+  test('reports spoken-character progress up to the text length', () async {
+    final narrator = FakeNarrator(
+      prepareDelay: const Duration(milliseconds: 1),
+      speakDelay: const Duration(milliseconds: 1),
+    );
+    addTearDown(narrator.dispose);
+
+    final expectation = expectLater(narrator.spokenChars, emitsThrough(5));
+    await narrator.speak('hello'); // length 5
+    await expectation;
+  });
 }
