@@ -100,7 +100,7 @@ void nextQuestion();               // if a sequence is provided
 
 ---
 
-## WIRING — the ONE real-entry-point construction site (contract for Phase 2 §2.3)
+## WIRING — the ONE real-entry-point construction site
 
 **File `lib/main.dart` is the single place real implementations are constructed and injected.** Every injectable interface below is wired here (and ONLY here in production code):
 
@@ -116,4 +116,4 @@ void main() {
   runApp(ProviderScope(overrides: overrides, child: const UltimateAiNarratorApp()));
 }
 ```
-Phase 2 §2.3 will grep-assert each real factory is referenced from `main.dart`/`buildRealOverrides` (outside its own module, outside tests) and add one reachability test per dependency that boots via the real entry point and asserts the real type was instantiated.
+Each real factory is referenced from `main.dart`/`buildRealOverrides` (outside its own module, outside tests), with one reachability test per dependency that boots via the real entry point and asserts the real type was instantiated.

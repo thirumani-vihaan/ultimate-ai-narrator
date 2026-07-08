@@ -102,12 +102,10 @@ lib/
   ui/                          # StoryScreen + widgets (buddy, quiz panel, confetti, …)
 assets/quiz/quiz.json          # default quiz "as if served by the backend"
 test/                          # 68 offline tests (no devices, no credentials)
-*.md                           # architecture, interfaces, plan, risk log, metrics, reports (repo root)
+*.md                           # architecture + interface design docs (repo root)
 ```
 
-Design docs: [`ARCHITECTURE.md`](ARCHITECTURE.md), [`INTERFACES.md`](INTERFACES.md),
-[`SPEC_SUMMARY.md`](SPEC_SUMMARY.md), [`RISK_LOG.md`](RISK_LOG.md),
-[`METRICS.md`](METRICS.md), [`FINAL_REPORT.md`](FINAL_REPORT.md).
+Design docs: [`ARCHITECTURE.md`](ARCHITECTURE.md), [`INTERFACES.md`](INTERFACES.md).
 
 ---
 
@@ -206,10 +204,8 @@ particles. `const`-heavy widget tree with scoped rebuilds. Only 5 small pure-Dar
 dependencies. Everything is disposed (controllers, streams, timers) — the spec's leak
 warning applied to Dart.
 
-### 8. AI usage & judgment
-I used an AI coding assistant throughout, under a strict plan-first, mock-first process
-(see `AGENT_BRIEF.md` / `TASK_PLAN.md`).
-- **A suggestion I changed:** the quick path was to reset per-question fields with
+### 8. Engineering judgment — a call I reversed, and a failure I chased down
+- **A shortcut I rejected:** the quick path was to reset per-question fields with
   `copyWith(lastSelected: null, attempts: 0)`. I rejected it — this `copyWith` can't
   *clear* a nullable field (passing `null` keeps the old value), so "Next question" would
   have silently carried the previous selection. I build a fresh `QuizState` instead. (The
