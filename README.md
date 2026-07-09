@@ -219,13 +219,7 @@ warning applied to Dart.
 
 ---
 
-## 🎥 Screen recording
 
-Record the full flow on Chrome (`flutter run -d chrome`): tap **Read Me a Story** → hear
-narration → quiz reveals → tap a wrong answer (shake) → tap the correct answer (confetti +
-Success) → **Next question** through the 3/4/5-option sequence.
-
----
 
 ## 🧪 Tech
 
